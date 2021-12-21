@@ -20,9 +20,9 @@
 
 static const char *env2str[BLUE_ENV_NUM] =
   {
-    "BLUE_SHARE_HOME",
-    "BLUE_SHARE_INSTALL",
-    "BLUE_SHARE_ROOT"
+    "OPEN_FILES_HOME",
+    "OPEN_FILES_INSTALL",
+    "OPEN_FILES_ROOT"
   } ;
 
 BLUE_BOOL 
