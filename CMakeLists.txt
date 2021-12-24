@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.21.1)
 project(of_core_darwin VERSION 1.0.1 DESCRIPTION "OpenFiles Platform for Darwin")
 
+include(configs/default)
+configure_file(include/ofc_darwin/config.h.in ofc_darwin/config.h @ONLY)
 include_directories(
 	${of_core_BINARY_DIR}
 	${of_core_SOURCE_DIR}/include
-	)
+	${CMAKE_CURRENT_BINARY_DIR})
 
 set(SRCS
     src/console_darwin.c

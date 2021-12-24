@@ -3,6 +3,7 @@
  * Attribution-NoDerivatives 4.0 International license that can be
  * found in the LICENSE file.
  */
+#include <ofc_darwin/config.h>
 #include <ifaddrs.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -63,6 +64,7 @@ BLUE_INT BlueNetInterfaceCountImpl (BLUE_VOID)
   int max_count;
   struct ifaddrs *ifap ;
   struct ifaddrs *ifap_index ;
+  BLUE_BOOL ignore;
 
   max_count = 0 ;
   if (getifaddrs(&ifap) == 0)
@@ -74,17 +76,28 @@ BLUE_INT BlueNetInterfaceCountImpl (BLUE_VOID)
 	   ifap_index != NULL ;
 	   ifap_index = ifap_index->ifa_next) 
 	{
+	  ignore = BLUE_FALSE;
+#if defined (OFC_DARWIN_IGNORE_EN5)
+	  if (BlueCstrcmp(ifap_index->ifa_name, "en5") == 0)
+	    ignore = BLUE_TRUE;
+#endif	      
+	  if (!ignore)
+	    {
 #if defined (BLUE_PARAM_LOOPBACK)
-	  if ((ifap_index->ifa_flags & IFF_UP) &&
-	      match_families (ifap_index))
-	    max_count++ ;
+	      if ((ifap_index->ifa_flags & IFF_UP) &&
+		  match_families (ifap_index))
+		{
+		  max_count++ ;
+		}
 #else
-	  if (!(ifap_index->ifa_flags & IFF_LOOPBACK) &&
-	      (ifap_index->ifa_flags & IFF_UP) &&
-	      match_families (ifap_index))
-	    max_count++ ;
+	      if (!(ifap_index->ifa_flags & IFF_LOOPBACK) &&
+		  (ifap_index->ifa_flags & IFF_UP) &&
+		  match_families (ifap_index))
+		{
+		  max_count++ ;
+		}
 #endif
-	  
+	    }
 	}
       freeifaddrs (ifap) ;
     }
@@ -103,6 +116,7 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
   struct sockaddr_in6 *pAddrInet6 ;
   BLUE_BOOL found ;
   BLUE_INT i ;
+  BLUE_BOOL ignore;
 
   max_count = 0 ;
 
@@ -131,32 +145,42 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
       for (ifap_index = ifap ; 
 	   ifap_index != NULL && !found ; )
 	{
+	  ignore = BLUE_FALSE;
+#if defined (OFC_DARWIN_IGNORE_EN5)
+	  if (BlueCstrcmp(ifap_index->ifa_name, "en5") == 0)
+	    ignore = BLUE_TRUE;
+#endif	      
+	  if (!ignore)
+	    {
 #if defined(BLUE_PARAM_LOOPBACK)
-	  if ((ifap_index->ifa_flags & IFF_UP) &&
-	      match_families(ifap_index))
-	    {
-	      if (max_count == index)
-		found = BLUE_TRUE ;
-	      else
+	      if ((ifap_index->ifa_flags & IFF_UP) &&
+		  match_families(ifap_index))
 		{
-		  max_count++ ;
-		  ifap_index = ifap_index->ifa_next ;
+		  if (max_count == index)
+		    found = BLUE_TRUE ;
+		  else
+		    {
+		      max_count++ ;
+		      ifap_index = ifap_index->ifa_next ;
+		    }
 		}
-	    }
 #else
-	  if (!(ifap_index->ifa_flags & IFF_LOOPBACK) &&
-	      (ifap_index->ifa_flags & IFF_UP) &&
-	      match_families(ifap_index))
-	    {
-	      if (max_count == index)
-		found = BLUE_TRUE ;
-	      else
+	      if (!(ifap_index->ifa_flags & IFF_LOOPBACK) &&
+		  (ifap_index->ifa_flags & IFF_UP) &&
+		  match_families(ifap_index))
 		{
-		  max_count++ ;
-		  ifap_index = ifap_index->ifa_next ;
+		  if (max_count == index)
+		    found = BLUE_TRUE ;
+		  else
+		    {
+		      max_count++ ;
+		      ifap_index = ifap_index->ifa_next ;
+		    }
 		}
-	    }
+	      else
+		ifap_index = ifap_index->ifa_next ;
 #endif
+	    }
 	  else
 	    ifap_index = ifap_index->ifa_next ;
 	}
