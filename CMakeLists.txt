@@ -6,7 +6,9 @@ configure_file(include/ofc_darwin/config.h.in ofc_darwin/config.h @ONLY)
 include_directories(
 	${of_core_BINARY_DIR}
 	${of_core_SOURCE_DIR}/include
-	${CMAKE_CURRENT_BINARY_DIR})
+	${CMAKE_CURRENT_BINARY_DIR}
+	${of_core_darwin_SOURCE_DIR}/include
+	)
 
 set(SRCS
     src/console_darwin.c

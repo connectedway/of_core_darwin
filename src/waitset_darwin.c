@@ -29,6 +29,8 @@
 #include "ofc/fs.h"
 #include "ofc/file.h"
 
+#include "ofc_darwin/fs_darwin.h"
+
 /**
  * \defgroup BlueWaitSetWin32 Win32 Dependent Scheduler Handling
  * \ingroup BlueWin32
@@ -146,7 +148,7 @@ BLUE_HANDLE BlueWaitSetWaitImpl (BLUE_HANDLE handle)
   BLUE_HANDLE triggered_event ;
   BLUE_HANDLE timer_event ;
   BLUE_HANDLE darwinHandle ;
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
   BLUE_HANDLE fsHandle ;
   BLUE_FS_TYPE fsType ;
 #endif
@@ -232,7 +234,7 @@ BLUE_HANDLE BlueWaitSetWaitImpl (BLUE_HANDLE handle)
 	      break ;
 
 	    case BLUE_HANDLE_FILE:
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
 	      fsType = BlueFileGetFSType(hEventHandle) ;
 
 	      if (fsType == BLUE_FS_DARWIN)
@@ -275,7 +277,7 @@ BLUE_HANDLE BlueWaitSetWaitImpl (BLUE_HANDLE handle)
 	      break ;
 
 	    case BLUE_HANDLE_FSDARWIN_OVERLAPPED:
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
 	      hEvent = BlueFSDarwinGetOverlappedEvent (hEventHandle) ;
 	      if (BlueEventTest (hEvent))
 		{
@@ -410,7 +412,7 @@ BLUE_VOID BlueWaitSetSetAssocImpl (BLUE_HANDLE hEvent,
       break ;
 
     case BLUE_HANDLE_FSDARWIN_OVERLAPPED:
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
       hAssoc = BlueFSDarwinGetOverlappedEvent (hEvent) ;
       BlueHandleSetApp (hAssoc, hApp, hSet) ;
 #endif
@@ -466,7 +468,7 @@ BLUE_VOID BlueWaitSetAddImpl (BLUE_HANDLE hSet, BLUE_HANDLE hApp,
       break ;
 
     case BLUE_HANDLE_FSDARWIN_OVERLAPPED:
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
       hAssoc = BlueFSDarwinGetOverlappedEvent (hEvent) ;
       BlueHandleSetApp (hAssoc, hApp, hSet) ;
       if (BlueEventTest (hAssoc))
@@ -500,7 +502,7 @@ BLUE_VOID BlueWaitSetDebug (BLUE_HANDLE handle)
   BLUE_HANDLE hEvent ;
   BLUE_HANDLE hEventHandle ;
   BLUE_HANDLE hWaitQ ;
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
   BLUE_FS_TYPE fsType ;
 #endif
 
@@ -539,7 +541,7 @@ BLUE_VOID BlueWaitSetDebug (BLUE_HANDLE handle)
 	      break ;
 
 	    case BLUE_HANDLE_FILE:
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
 	      fsType = BlueFileGetFSType(hEventHandle) ;
 	      if (fsType == BLUE_FS_DARWIN)
 		{
@@ -553,7 +555,7 @@ BLUE_VOID BlueWaitSetDebug (BLUE_HANDLE handle)
 	      break ;
 
 	    case BLUE_HANDLE_FSDARWIN_OVERLAPPED:
-#if defined(BLUE_PARAM_FS_DARWIN)
+#if defined(OFC_FS_DARWIN)
 	      hEvent = BlueFSDarwinGetOverlappedEvent (hEventHandle) ;
 	      BlueCprintf ("Darwin Overlapped: %s\n",
 			   BlueEventTest (hEvent) ? 
