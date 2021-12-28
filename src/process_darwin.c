@@ -73,12 +73,12 @@ BlueProcessTermTrapImpl (BLUE_PROCESS_TRAP_HANDLER trap)
   return (ret) ;
 }
 
-BLUE_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
-				 OFC_TCHAR *uname,
-				 OFC_INT argc,
-				 OFC_CHAR **argv) 
+OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
+                                OFC_TCHAR *uname,
+                                OFC_INT argc,
+                                OFC_CHAR **argv)
 {
-  BLUE_HANDLE hProcess ;
+  OFC_HANDLE hProcess ;
   OFC_CHAR *cname ;
   OFC_CHAR **exec_argv ;
   OFC_INT i ;
@@ -95,7 +95,7 @@ BLUE_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
     exec_argv[i] = argv[i] ;
   exec_argv[i] = OFC_NULL ;
 
-  hProcess = BLUE_INVALID_HANDLE_VALUE ;
+  hProcess = OFC_INVALID_HANDLE_VALUE ;
 
   pid = vfork () ;
   if (pid < 0)
@@ -155,7 +155,7 @@ BLUE_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
 	{
 	  OFC_DWORD_PTR pid2l = (OFC_DWORD_PTR) pid2 ;
 	  hProcess = 
-	    BlueHandleCreate (BLUE_HANDLE_PROCESS, (OFC_VOID *) pid2l) ;
+	    ofc_handle_create (OFC_HANDLE_PROCESS, (OFC_VOID *) pid2l) ;
 	}
     }
 
@@ -166,27 +166,27 @@ BLUE_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
   return (hProcess) ;
 }
 
-BLUE_PROCESS_ID BlueProcessGetIdImpl (BLUE_HANDLE hProcess)
+BLUE_PROCESS_ID BlueProcessGetIdImpl (OFC_HANDLE hProcess)
 {
   pid_t pid ;
 
-  pid = (pid_t) BlueHandleLock (hProcess) ;
+  pid = (pid_t) ofc_handle_lock (hProcess) ;
   if (pid != (pid_t) 0)
-    BlueHandleUnlock (hProcess) ;
+    ofc_handle_unlock (hProcess) ;
 
   return ((BLUE_PROCESS_ID) pid) ;
 }
   
-OFC_VOID BlueProcessTermImpl (BLUE_HANDLE hProcess) 
+OFC_VOID BlueProcessTermImpl (OFC_HANDLE hProcess)
 {
   pid_t pid ;
 
-  pid = (pid_t) BlueHandleLock (hProcess) ;
+  pid = (pid_t) ofc_handle_lock (hProcess) ;
 
   kill (pid, SIGTERM) ;
 
-  BlueHandleDestroy (hProcess) ;
-  BlueHandleUnlock (hProcess) ;
+  ofc_handle_destroy (hProcess) ;
+  ofc_handle_unlock (hProcess) ;
 }
 
 OFC_VOID BlueProcessKillImpl (BLUE_PROCESS_ID pid)

@@ -33,11 +33,11 @@ OFC_VOID BlueNetInitImpl (OFC_VOID)
   signal (SIGPIPE, SIG_IGN) ;
 }
 
-OFC_VOID BlueNetRegisterConfigImpl (BLUE_HANDLE hEvent)
+OFC_VOID BlueNetRegisterConfigImpl (OFC_HANDLE hEvent)
 {
 }
 
-OFC_VOID BlueNetUnregisterConfigImpl (BLUE_HANDLE hEvent)
+OFC_VOID BlueNetUnregisterConfigImpl (OFC_HANDLE hEvent)
 {
 }
 
