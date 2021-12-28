@@ -32,7 +32,7 @@ OFC_HANDLE BlueEventCreateImpl (OFC_EVENT_TYPE eventType)
   pthread_mutex_t pthread_mutex_initializer = PTHREAD_MUTEX_INITIALIZER ;
 
   hDarwinEvent = OFC_HANDLE_NULL ;
-  darwin_event = BlueHeapMalloc (sizeof (DARWIN_EVENT)) ;
+  darwin_event = ofc_malloc (sizeof (DARWIN_EVENT)) ;
   if (darwin_event != OFC_NULL)
     {
       darwin_event->eventType = eventType ;
@@ -108,7 +108,7 @@ OFC_VOID BlueEventDestroyImpl (OFC_HANDLE hEvent)
     {
       pthread_cond_destroy (&darwinEvent->pthread_cond) ;
       pthread_mutex_destroy (&darwinEvent->pthread_mutex) ;
-      BlueHeapFree (darwinEvent) ;
+      ofc_free (darwinEvent) ;
       ofc_handle_destroy (hEvent) ;
       ofc_handle_unlock (hEvent) ;
     }

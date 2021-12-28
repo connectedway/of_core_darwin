@@ -48,15 +48,15 @@ OFC_VOID BlueWriteConsoleImpl (OFC_CCHAR *obuf)
 {
   if (g_fd == -1)
     open_log();
-  write (g_fd, obuf, BlueCstrlen(obuf)) ;
+  write (g_fd, obuf, ofc_strlen(obuf)) ;
   fsync (g_fd) ;
 }
 
 OFC_VOID BlueReadStdInImpl (OFC_CHAR *inbuf, OFC_SIZET len)
 {
   fgets (inbuf, (int) len, stdin) ;
-  if (BlueCstrlen (inbuf) < len)
-    len = BlueCstrlen (inbuf) ;
+  if (ofc_strlen (inbuf) < len)
+    len = ofc_strlen (inbuf) ;
   inbuf[len-1] = '\0' ;
 }
 
@@ -65,7 +65,7 @@ OFC_VOID BlueReadPasswordImpl (OFC_CHAR *inbuf, OFC_SIZET len)
   char *pass ;
 
   pass = getpass ("") ;
-  BlueCstrncpy (inbuf, pass, len-1) ;
+  ofc_strncpy (inbuf, pass, len - 1) ;
   inbuf[len] = '\0' ;
 }
 

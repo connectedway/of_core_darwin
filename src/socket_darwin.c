@@ -45,13 +45,13 @@
 typedef struct
 {
   int socket ;
-  BLUE_FAMILY_TYPE family ;
+  OFC_FAMILY_TYPE family ;
   OFC_UINT16 events ;
   OFC_UINT16 revents ;
-  BLUE_IPADDR ip ;
+  OFC_IPADDR ip ;
 } BLUE_SOCKET_IMPL ;
 
-OFC_HANDLE BlueSocketImplCreate (BLUE_FAMILY_TYPE family,
+OFC_HANDLE BlueSocketImplCreate (OFC_FAMILY_TYPE family,
                                  BLUE_SOCKET_TYPE socktype)
 {
   OFC_HANDLE hSocket ;
@@ -63,23 +63,23 @@ OFC_HANDLE BlueSocketImplCreate (BLUE_FAMILY_TYPE family,
   int on ;
   
   hSocket = OFC_HANDLE_NULL ;
-  sock = BlueHeapMalloc (sizeof (BLUE_SOCKET_IMPL)) ;
+  sock = ofc_malloc (sizeof (BLUE_SOCKET_IMPL)) ;
 
   if (sock != OFC_NULL)
     {
       sock->family = family ;
       sock->revents = 0 ;
       sock->events = 0 ;
-      if (sock->family == BLUE_FAMILY_IP)
+      if (sock->family == OFC_FAMILY_IP)
 	{
-	  sock->ip.ip_version = BLUE_FAMILY_IP ;
-	  sock->ip.u.ipv4.addr = BLUE_INADDR_ANY ;
+	  sock->ip.ip_version = OFC_FAMILY_IP ;
+	  sock->ip.u.ipv4.addr = OFC_INADDR_ANY ;
 	  fam = AF_INET;
 	}
       else
 	{
-	  sock->ip.ip_version = BLUE_FAMILY_IPV6 ;
-	  sock->ip.u.ipv6 = blue_in6addr_any ;
+	  sock->ip.ip_version = OFC_FAMILY_IPV6 ;
+	  sock->ip.u.ipv6 = ofc_in6addr_any ;
 	  fam = AF_INET6 ;
 	}
 
@@ -91,7 +91,7 @@ OFC_HANDLE BlueSocketImplCreate (BLUE_FAMILY_TYPE family,
       else if (socktype == SOCKET_TYPE_ICMP)
 	{
 	  stype = SOCK_RAW ;
-	  if (sock->ip.ip_version == BLUE_FAMILY_IP)
+	  if (sock->ip.ip_version == OFC_FAMILY_IP)
 	    proto = IPPROTO_ICMP ;
 	  else
 	    proto = IPPROTO_ICMPV6 ;
@@ -106,10 +106,10 @@ OFC_HANDLE BlueSocketImplCreate (BLUE_FAMILY_TYPE family,
 
       if (sock->socket < 0)
 	{
-	  BlueCprintf ("socket error: %s, errno %d\n",
+	  ofc_printf ("socket error: %s, errno %d\n",
 		       fam == AF_INET ? "AF_INET" : "AF_INET6",
-		       errno) ;
-	  BlueHeapFree (sock) ;
+                  errno) ;
+	  ofc_free (sock) ;
 	}
       else
 	{
@@ -137,7 +137,7 @@ OFC_VOID BlueSocketImplDestroy (OFC_HANDLE hSocket)
     {
       if (sock->socket >= 0)
 	close (sock->socket) ;
-      BlueHeapFree (sock) ;
+      ofc_free (sock) ;
       ofc_handle_destroy (hSocket) ;
       ofc_handle_unlock (hSocket) ;
     }
@@ -156,46 +156,46 @@ OFC_VOID BlueSocketImplDestroy (OFC_HANDLE hSocket)
  */
 static OFC_VOID BlueMakeSockaddr (struct sockaddr **mysockaddr,
 				   socklen_t *mysocklen,
-				   const BLUE_IPADDR *ip,
+				   const OFC_IPADDR *ip,
 				   OFC_UINT16 port)
 {
   struct sockaddr_in *mysockaddr_in ;
   struct sockaddr_in6 *mysockaddr_in6 ;
   OFC_INT i ;
   
-  if (ip->ip_version == BLUE_FAMILY_IP)
+  if (ip->ip_version == OFC_FAMILY_IP)
     {
-      mysockaddr_in = BlueHeapMalloc (sizeof (struct sockaddr_in)) ;
-      BlueCmemset (mysockaddr_in, '\0', sizeof (struct sockaddr_in)) ;
+      mysockaddr_in = ofc_malloc (sizeof (struct sockaddr_in)) ;
+      ofc_memset (mysockaddr_in, '\0', sizeof (struct sockaddr_in)) ;
 
       mysockaddr_in->sin_family = AF_INET ;
-      BLUE_NET_STON (&mysockaddr_in->sin_port, 0, port) ;
-      BLUE_NET_LTON (&mysockaddr_in->sin_addr.s_addr, 0,
+      OFC_NET_STON (&mysockaddr_in->sin_port, 0, port) ;
+      OFC_NET_LTON (&mysockaddr_in->sin_addr.s_addr, 0,
 		     ip->u.ipv4.addr) ;
       *mysockaddr = (struct sockaddr *) mysockaddr_in ;
       *mysocklen = sizeof (struct sockaddr_in) ;
     }
   else
     {
-      mysockaddr_in6 = BlueHeapMalloc (sizeof (struct sockaddr_in6)) ;
-      BlueCmemset (mysockaddr_in6, '\0', sizeof (struct sockaddr_in6)) ;
+      mysockaddr_in6 = ofc_malloc (sizeof (struct sockaddr_in6)) ;
+      ofc_memset (mysockaddr_in6, '\0', sizeof (struct sockaddr_in6)) ;
 
       mysockaddr_in6->sin6_len = sizeof (struct sockaddr_in6) ;
       mysockaddr_in6->sin6_family = AF_INET6 ;
-      mysockaddr_in6->sin6_scope_id = ip->u.ipv6.blue_scope ;
+      mysockaddr_in6->sin6_scope_id = ip->u.ipv6.scope ;
 
-      BLUE_NET_STON (&mysockaddr_in6->sin6_port, 0, port) ;
+      OFC_NET_STON (&mysockaddr_in6->sin6_port, 0, port) ;
       for (i = 0 ; i < 16 ; i++)
 	mysockaddr_in6->sin6_addr.s6_addr[i] = 
-	  ip->u.ipv6.blue_s6_addr[i] ;
+	  ip->u.ipv6._s6_addr[i] ;
       *mysockaddr = (struct sockaddr *) mysockaddr_in6 ;
       *mysocklen = sizeof (struct sockaddr_in6) ;
     }
 }
 
 OFC_VOID BlueUnmakeSockaddr  (struct sockaddr *mysockaddr,
-			       BLUE_IPADDR *ip,
-			       OFC_UINT16 *port)
+                              OFC_IPADDR *ip,
+                              OFC_UINT16 *port)
 {
   struct sockaddr_in *mysockaddr_in ;
   struct sockaddr_in6 *mysockaddr_in6 ;
@@ -204,26 +204,26 @@ OFC_VOID BlueUnmakeSockaddr  (struct sockaddr *mysockaddr,
   if (mysockaddr->sa_family == AF_INET)
     {
       mysockaddr_in = (struct sockaddr_in *) mysockaddr ;
-      ip->ip_version = BLUE_FAMILY_IP ;
-      *port = BLUE_NET_NTOS (&mysockaddr_in->sin_port, 0) ;
-      ip->u.ipv4.addr = BLUE_NET_NTOL (&mysockaddr_in->sin_addr.s_addr, 0) ;
+      ip->ip_version = OFC_FAMILY_IP ;
+      *port = OFC_NET_NTOS (&mysockaddr_in->sin_port, 0) ;
+      ip->u.ipv4.addr = OFC_NET_NTOL (&mysockaddr_in->sin_addr.s_addr, 0) ;
     }
   else
     {
       mysockaddr_in6 = (struct sockaddr_in6 *) mysockaddr ;
       if (ip != OFC_NULL)
 	{
-	  ip->ip_version = BLUE_FAMILY_IPV6 ;
+	  ip->ip_version = OFC_FAMILY_IPV6 ;
 	  for (i = 0 ; i < 16 ; i++)
-	    ip->u.ipv6.blue_s6_addr[i] = 
+	    ip->u.ipv6._s6_addr[i] =
 	      mysockaddr_in6->sin6_addr.s6_addr[i] ; 
 	}
       if (port != OFC_NULL)
-	*port = BLUE_NET_NTOS (&mysockaddr_in6->sin6_port, 0) ;
+	*port = OFC_NET_NTOS (&mysockaddr_in6->sin6_port, 0) ;
     }
 }
 
-OFC_BOOL BlueSocketImplBind (OFC_HANDLE hSocket, const BLUE_IPADDR *ip,
+OFC_BOOL BlueSocketImplBind (OFC_HANDLE hSocket, const OFC_IPADDR *ip,
                              OFC_UINT16 port)
 {
   BLUE_SOCKET_IMPL *sock ;
@@ -249,19 +249,19 @@ OFC_BOOL BlueSocketImplBind (OFC_HANDLE hSocket, const BLUE_IPADDR *ip,
 	  OFC_CHAR ip_str[IP6STR_LEN] ;
 	  OFC_CHAR errstr[80] ;
 	  strerror_r (errno, errstr, 80) ;
-	  BlueCprintf ("Bind Error: %.80s\n", errstr) ;
+	  ofc_printf ("Bind Error: %.80s\n", errstr) ;
 	  if (mysockaddr->sa_family == AF_INET)
 	    {
 	      struct sockaddr_in *mysockaddr_in ;
 	      mysockaddr_in = (struct sockaddr_in *) mysockaddr ;
 	      inet_ntop (AF_INET, &mysockaddr_in->sin_addr,
 			 ip_str, IP6STR_LEN) ;
-	      BlueCprintf ("  family: %d\n"
+	      ofc_printf ("  family: %d\n"
 			   "  port: %d\n"
 			   "  addr: %s\n",
-			   mysockaddr_in->sin_family,
-			   ntohs(mysockaddr_in->sin_port),
-			   ip_str) ;
+                      mysockaddr_in->sin_family,
+                      ntohs(mysockaddr_in->sin_port),
+                      ip_str) ;
 	    }
 	  else
 	    {
@@ -269,22 +269,22 @@ OFC_BOOL BlueSocketImplBind (OFC_HANDLE hSocket, const BLUE_IPADDR *ip,
 	      mysockaddr_in6 = (struct sockaddr_in6 *) mysockaddr ;
 	      inet_ntop (AF_INET6, &mysockaddr_in6->sin6_addr,
 			 ip_str, IP6STR_LEN) ;
-	      BlueCprintf ("  len: %d\n"
+	      ofc_printf ("  len: %d\n"
 			   "  family: %d\n"
 			   "  port: %d\n"
 			   "  flowinfo: 0x%08x\n"
 			   "  addr: %s\n"
 			   "  scope: 0x%08x\n",
-			   mysockaddr_in6->sin6_len,
-			   mysockaddr_in6->sin6_family,
-			   ntohs(mysockaddr_in6->sin6_port),
-			   mysockaddr_in6->sin6_flowinfo,
-			   ip_str,
-			   mysockaddr_in6->sin6_scope_id) ;
+                      mysockaddr_in6->sin6_len,
+                      mysockaddr_in6->sin6_family,
+                      ntohs(mysockaddr_in6->sin6_port),
+                      mysockaddr_in6->sin6_flowinfo,
+                      ip_str,
+                      mysockaddr_in6->sin6_scope_id) ;
 	    }
 	}
 
-      BlueHeapFree (mysockaddr) ;
+      ofc_free (mysockaddr) ;
 
       ofc_handle_unlock (hSocket) ;
     }
@@ -330,7 +330,7 @@ OFC_BOOL BlueSocketImplClose (OFC_HANDLE hSocket)
  *    status (STATE_SUCCESS or STATE_FAIL)
  */
 OFC_BOOL BlueSocketImplConnect (OFC_HANDLE hSocket,
-                                const BLUE_IPADDR *ip, OFC_UINT16 port)
+                                const OFC_IPADDR *ip, OFC_UINT16 port)
 {
   BLUE_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
@@ -368,7 +368,7 @@ OFC_BOOL BlueSocketImplConnect (OFC_HANDLE hSocket,
 	  }
 #endif
 
-      BlueHeapFree (mysockaddr) ;
+      ofc_free (mysockaddr) ;
 
       ofc_handle_unlock (hSocket) ;
     }
@@ -415,7 +415,7 @@ OFC_BOOL BlueSocketImplListen (OFC_HANDLE hSocket, OFC_INT backlog)
  *    status (STATE_SUCCESS or STATE_FAIL)
  */
 OFC_HANDLE BlueSocketImplAccept (OFC_HANDLE hSocket,
-                                 BLUE_IPADDR *ip, OFC_UINT16 *port)
+                                 OFC_IPADDR *ip, OFC_UINT16 *port)
 {
   BLUE_SOCKET_IMPL *sock ;
   BLUE_SOCKET_IMPL *newsock ;
@@ -428,12 +428,12 @@ OFC_HANDLE BlueSocketImplAccept (OFC_HANDLE hSocket,
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
     {
-      newsock = BlueHeapMalloc (sizeof (BLUE_SOCKET_IMPL)) ;
+      newsock = ofc_malloc (sizeof (BLUE_SOCKET_IMPL)) ;
 
-      addrlen = (BLUE_C_MAX (sizeof (struct sockaddr_in6),
+      addrlen = (OFC_MAX (sizeof (struct sockaddr_in6),
 			     sizeof (struct sockaddr_in))) ;
 
-      mysockaddr = BlueHeapMalloc (addrlen) ;
+      mysockaddr = ofc_malloc (addrlen) ;
       newsock->socket = accept(sock->socket, mysockaddr, &addrlen);
 
       if (newsock->socket != -1)
@@ -447,9 +447,9 @@ OFC_HANDLE BlueSocketImplAccept (OFC_HANDLE hSocket,
 	  hNewSock = ofc_handle_create (OFC_HANDLE_SOCKET_IMPL, newsock) ;
 	}
       else
-	BlueHeapFree (newsock) ;
+	ofc_free (newsock) ;
 
-      BlueHeapFree (mysockaddr) ;
+      ofc_free (mysockaddr) ;
       ofc_handle_unlock (hSocket) ;
     }
   return (hNewSock) ;
@@ -597,7 +597,7 @@ OFC_SIZET BlueSocketImplSend (OFC_HANDLE hSocket, const OFC_VOID *buf,
  */
 OFC_SIZET BlueSocketImplSendTo (OFC_HANDLE hSocket, const OFC_VOID *buf,
                                 OFC_SIZET len,
-                                const BLUE_IPADDR *ip,
+                                const OFC_IPADDR *ip,
                                 OFC_UINT16 port)
 {
   BLUE_SOCKET_IMPL *sock ;
@@ -624,25 +624,25 @@ OFC_SIZET BlueSocketImplSendTo (OFC_HANDLE hSocket, const OFC_VOID *buf,
 	{
 	  OFC_CHAR local_ip[IP6STR_LEN] ;
 	  OFC_CHAR remote_ip[IP6STR_LEN] ;
-	  BLUE_SOCKADDR local ;
-	  BLUE_SOCKADDR remote ;
+	  OFC_SOCKADDR local ;
+	  OFC_SOCKADDR remote ;
 	  OFC_CHAR errstr[80] ;
 
 	  strerror_r (errno, errstr, 80) ;
-	  BlueCprintf ("Sendto Error: %.80s\n", errstr) ;
+	  ofc_printf ("Sendto Error: %.80s\n", errstr) ;
 	  BlueSocketImplGetAddresses (hSocket, &local, &remote) ;
 
-	  BlueNETntop (&local.sin_addr, local_ip, IP6STR_LEN) ;
-	  BlueNETntop (ip, remote_ip, IP6STR_LEN) ;
+	  ofc_ntop (&local.sin_addr, local_ip, IP6STR_LEN) ;
+	  ofc_ntop (ip, remote_ip, IP6STR_LEN) ;
 
-	  BlueCprintf ("  status: %d\n"
+	  ofc_printf ("  status: %d\n"
 		       "  len: %d\n"
 		       "  errno: %d\n"
 		       "  local ip: %s\n"
 		       "  remote ip: %s\n",
-		       status, len, errno, local_ip, remote_ip) ;
+                  status, len, errno, local_ip, remote_ip) ;
 	}
-      BlueHeapFree (mysockaddr) ;
+      ofc_free (mysockaddr) ;
       ofc_handle_unlock (hSocket) ;
     }
 
@@ -703,7 +703,7 @@ OFC_SIZET BlueSocketImplRecv (OFC_HANDLE hSocket,
 OFC_SIZET BlueSocketImplRecvFrom (OFC_HANDLE hSocket,
                                   OFC_VOID *buf,
                                   OFC_SIZET len,
-                                  BLUE_IPADDR *ip,
+                                  OFC_IPADDR *ip,
                                   OFC_UINT16 *port)
 {
   BLUE_SOCKET_IMPL *sock ;
@@ -717,11 +717,11 @@ OFC_SIZET BlueSocketImplRecvFrom (OFC_HANDLE hSocket,
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
     {
-      mysize = (BLUE_C_MAX (sizeof (struct sockaddr_in6),
+      mysize = (OFC_MAX (sizeof (struct sockaddr_in6),
 			    sizeof (struct sockaddr_in))) ;
 
-      mysockaddr = BlueHeapMalloc(mysize) ;
-      BlueCmemset (mysockaddr, '\0', mysize) ;
+      mysockaddr = ofc_malloc(mysize) ;
+      ofc_memset (mysockaddr, '\0', mysize) ;
 
       status = recvfrom(sock->socket, (char *) buf, (int) len, 0,
 			mysockaddr, &mysize);
@@ -733,7 +733,7 @@ OFC_SIZET BlueSocketImplRecvFrom (OFC_HANDLE hSocket,
 	  BlueUnmakeSockaddr (mysockaddr, ip, port) ;
 	  ret = status ;
 	}
-      BlueHeapFree (mysockaddr) ;
+      ofc_free (mysockaddr) ;
       ofc_handle_unlock (hSocket) ;
     }
   return(ret) ;
@@ -876,8 +876,8 @@ OFC_VOID BlueSocketImplSetRecvSize (OFC_HANDLE hSocket, OFC_INT size)
 }
   
 OFC_BOOL BlueSocketImplGetAddresses (OFC_HANDLE hSock,
-                                     BLUE_SOCKADDR *local,
-                                     BLUE_SOCKADDR *remote)
+                                     OFC_SOCKADDR *local,
+                                     OFC_SOCKADDR *remote)
 {
   BLUE_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
@@ -891,23 +891,23 @@ OFC_BOOL BlueSocketImplGetAddresses (OFC_HANDLE hSock,
   sock = ofc_handle_lock (hSock) ;
   if (sock != OFC_NULL)
     {
-      local_sockaddr_size = (BLUE_C_MAX (sizeof (struct sockaddr_in6),
+      local_sockaddr_size = (OFC_MAX (sizeof (struct sockaddr_in6),
 					 sizeof (struct sockaddr_in))) ;
-      local_sockaddr = BlueHeapMalloc (local_sockaddr_size) ;
+      local_sockaddr = ofc_malloc (local_sockaddr_size) ;
       darwin_status = getsockname (sock->socket, local_sockaddr, 
 				   &local_sockaddr_size) ;
       if (darwin_status == 0)
 	{
 	  if (local_sockaddr->sa_family == AF_INET)
-	    local->sin_family = BLUE_FAMILY_IP ;
+	    local->sin_family = OFC_FAMILY_IP ;
 	  else
-	    local->sin_family = BLUE_FAMILY_IPV6 ;
+	    local->sin_family = OFC_FAMILY_IPV6 ;
 	  BlueUnmakeSockaddr (local_sockaddr, 
 			      &local->sin_addr, &local->sin_port) ;
 
-	  remote_sockaddr_size = (BLUE_C_MAX (sizeof (struct sockaddr_in6),
+	  remote_sockaddr_size = (OFC_MAX (sizeof (struct sockaddr_in6),
 					      sizeof (struct sockaddr_in))) ;
-	  remote_sockaddr = BlueHeapMalloc (remote_sockaddr_size) ;
+	  remote_sockaddr = ofc_malloc (remote_sockaddr_size) ;
 
 	  darwin_status = getpeername (sock->socket, 
 				       remote_sockaddr, 
@@ -915,16 +915,16 @@ OFC_BOOL BlueSocketImplGetAddresses (OFC_HANDLE hSock,
 	  if (darwin_status == 0)
 	    {
 	      if (remote_sockaddr->sa_family == AF_INET)
-		remote->sin_family = BLUE_FAMILY_IP ;
+		remote->sin_family = OFC_FAMILY_IP ;
 	      else
-		remote->sin_family = BLUE_FAMILY_IPV6 ;
+		remote->sin_family = OFC_FAMILY_IPV6 ;
 	      BlueUnmakeSockaddr (remote_sockaddr, &remote->sin_addr, 
 				  &remote->sin_port) ;
 	      ret = OFC_TRUE ;
 	    }
-	  BlueHeapFree (remote_sockaddr) ;
+	  ofc_free (remote_sockaddr) ;
 	}
-      BlueHeapFree (local_sockaddr) ;
+      ofc_free (local_sockaddr) ;
       ofc_handle_unlock (hSock) ;
     }
   return (ret) ;

@@ -34,9 +34,9 @@ BlueEnvGetImpl (OFC_ENV_VALUE value, OFC_TCHAR *ptr, OFC_SIZET len)
       env = getenv (env2str[value]) ;
       if (env != NULL)
 	{
-	  path = BlueCcstr2tstr (env) ;
-	  BlueCtstrncpy (ptr, path, len) ;
-	  BlueHeapFree (path) ;
+	  path = ofc_cstr2tstr (env) ;
+	  ofc_tstrncpy (ptr, path, len) ;
+	  ofc_free (path) ;
 	  ret = OFC_TRUE ;
 	}
 

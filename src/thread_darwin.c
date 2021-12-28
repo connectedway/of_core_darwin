@@ -55,7 +55,7 @@ static void *BlueThreadLaunch (void *arg)
     {
       pthread_cancel (darwinThread->thread) ;
       ofc_handle_destroy (darwinThread->handle) ;
-      BlueHeapFree (darwinThread) ;
+      ofc_free (darwinThread) ;
     }
   return (OFC_NULL) ;
 }
@@ -73,7 +73,7 @@ OFC_HANDLE BlueThreadCreateImpl (OFC_DWORD(scheduler)(OFC_HANDLE hThread,
   pthread_attr_t attr ;
 
   ret = OFC_HANDLE_NULL ;
-  darwinThread = BlueHeapMalloc (sizeof (DARWIN_THREAD)) ;
+  darwinThread = ofc_malloc (sizeof (DARWIN_THREAD)) ;
   if (darwinThread != OFC_NULL)
     {
       darwinThread->wait_set = OFC_HANDLE_NULL ;
@@ -95,7 +95,7 @@ OFC_HANDLE BlueThreadCreateImpl (OFC_DWORD(scheduler)(OFC_HANDLE hThread,
 			  BlueThreadLaunch, darwinThread) != 0)
 	{
 	  ofc_handle_destroy (darwinThread->handle) ;
-	  BlueHeapFree (darwinThread) ;
+	  ofc_free (darwinThread) ;
 	}
       else
 	ret = darwinThread->handle ;
@@ -143,7 +143,7 @@ OFC_VOID BlueThreadWaitImpl (OFC_HANDLE hThread)
 	{
 	  ret = pthread_join (darwinThread->thread, OFC_NULL) ;
 	  ofc_handle_destroy (darwinThread->handle) ;
-	  BlueHeapFree (darwinThread) ;
+	  ofc_free (darwinThread) ;
 	}
       ofc_handle_unlock (hThread) ;
     }

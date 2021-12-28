@@ -88,9 +88,9 @@ OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
   struct passwd *user ;
   volatile pid_t pid2 ;
 
-  cname = BlueCtstr2cstr (name) ;
-  cuname = BlueCtstr2cstr (uname) ;
-  exec_argv = BlueHeapMalloc (sizeof (OFC_CHAR *) * (argc+1)) ;
+  cname = ofc_tstr2cstr (name) ;
+  cuname = ofc_tstr2cstr (uname) ;
+  exec_argv = ofc_malloc (sizeof (OFC_CHAR *) * (argc + 1)) ;
   for (i = 0 ; i < argc ; i++)
     exec_argv[i] = argv[i] ;
   exec_argv[i] = OFC_NULL ;
@@ -159,9 +159,9 @@ OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
 	}
     }
 
-  BlueHeapFree (exec_argv) ;
-  BlueHeapFree (cuname) ;
-  BlueHeapFree (cname) ;
+  ofc_free (exec_argv) ;
+  ofc_free (cuname) ;
+  ofc_free (cname) ;
 
   return (hProcess) ;
 }

@@ -21,14 +21,14 @@ OFC_VOID BlueLockDestroyImpl (BLUE_LOCK_IMPL *lock)
 {
   pthread_mutex_destroy (&lock->mutex_lock) ;
   pthread_mutexattr_destroy (&lock->mutex_attr) ;
-  BlueHeapFree(lock);
+  ofc_free(lock);
 }
 
 OFC_VOID *BlueLockInitImpl (OFC_VOID)
 {
   BLUE_LOCK_IMPL *lock;
 
-  lock = BlueHeapMalloc(sizeof(BLUE_LOCK_IMPL));
+  lock = ofc_malloc(sizeof(BLUE_LOCK_IMPL));
   pthread_mutexattr_init (&lock->mutex_attr) ;
   pthread_mutexattr_settype (&lock->mutex_attr, PTHREAD_MUTEX_RECURSIVE) ;
   pthread_mutex_init (&lock->mutex_lock, &lock->mutex_attr) ;
