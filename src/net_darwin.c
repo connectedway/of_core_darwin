@@ -28,43 +28,43 @@
 
 /** \{ */
 
-BLUE_VOID BlueNetInitImpl (BLUE_VOID)
+OFC_VOID BlueNetInitImpl (OFC_VOID)
 {
   signal (SIGPIPE, SIG_IGN) ;
 }
 
-BLUE_VOID BlueNetRegisterConfigImpl (BLUE_HANDLE hEvent)
+OFC_VOID BlueNetRegisterConfigImpl (BLUE_HANDLE hEvent)
 {
 }
 
-BLUE_VOID BlueNetUnregisterConfigImpl (BLUE_HANDLE hEvent)
+OFC_VOID BlueNetUnregisterConfigImpl (BLUE_HANDLE hEvent)
 {
 }
 
-static BLUE_BOOL match_families (struct ifaddrs *ifaddrp)
+static OFC_BOOL match_families (struct ifaddrs *ifaddrp)
 {
-  BLUE_BOOL ret ;
+  OFC_BOOL ret ;
 
-  ret = BLUE_FALSE ;
-#if defined(BLUE_PARAM_DISCOVER_IPV4)
+  ret = OFC_FALSE ;
+#if defined(OFC_DISCOVER_IPV4)
   if (ifaddrp->ifa_addr->sa_family == AF_INET)
-    ret = BLUE_TRUE ;
+    ret = OFC_TRUE ;
 #endif
-#if defined(BLUE_PARAM_DISCOVER_IPV6)
+#if defined(OFC_DISCOVER_IPV6)
   if (ifaddrp->ifa_addr->sa_family == AF_INET6)
     {
-      ret = BLUE_TRUE ;
+      ret = OFC_TRUE ;
     }
 #endif      
   return (ret) ;
 }
 
-BLUE_INT BlueNetInterfaceCountImpl (BLUE_VOID) 
+OFC_INT BlueNetInterfaceCountImpl (OFC_VOID) 
 {
   int max_count;
   struct ifaddrs *ifap ;
   struct ifaddrs *ifap_index ;
-  BLUE_BOOL ignore;
+  OFC_BOOL ignore;
 
   max_count = 0 ;
   if (getifaddrs(&ifap) == 0)
@@ -76,14 +76,14 @@ BLUE_INT BlueNetInterfaceCountImpl (BLUE_VOID)
 	   ifap_index != NULL ;
 	   ifap_index = ifap_index->ifa_next) 
 	{
-	  ignore = BLUE_FALSE;
+	  ignore = OFC_FALSE;
 #if defined (OFC_DARWIN_IGNORE_EN5)
 	  if (BlueCstrcmp(ifap_index->ifa_name, "en5") == 0)
-	    ignore = BLUE_TRUE;
+	    ignore = OFC_TRUE;
 #endif	      
 	  if (!ignore)
 	    {
-#if defined (BLUE_PARAM_LOOPBACK)
+#if defined (OFC_LOOPBACK)
 	      if ((ifap_index->ifa_flags & IFF_UP) &&
 		  match_families (ifap_index))
 		{
@@ -104,7 +104,7 @@ BLUE_INT BlueNetInterfaceCountImpl (BLUE_VOID)
   return (max_count) ;
 }
 
-BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index, 
+OFC_VOID BlueNetInterfaceAddrImpl (OFC_INT index, 
 				    BLUE_IPADDR *pinaddr,
 				    BLUE_IPADDR *pbcast,
 				    BLUE_IPADDR *pmask) 
@@ -114,23 +114,23 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
   struct ifaddrs *ifap_index ;
   struct sockaddr_in *pAddrInet ;
   struct sockaddr_in6 *pAddrInet6 ;
-  BLUE_BOOL found ;
-  BLUE_INT i ;
-  BLUE_BOOL ignore;
+  OFC_BOOL found ;
+  OFC_INT i ;
+  OFC_BOOL ignore;
 
   max_count = 0 ;
 
-  if (pinaddr != BLUE_NULL)
+  if (pinaddr != OFC_NULL)
     {
       pinaddr->ip_version = BLUE_FAMILY_IP ;
       pinaddr->u.ipv4.addr = BLUE_INADDR_NONE ;
     }
-  if (pbcast != BLUE_NULL)
+  if (pbcast != OFC_NULL)
     {
       pbcast->ip_version = BLUE_FAMILY_IP ;
       pbcast->u.ipv4.addr = BLUE_INADDR_NONE ;
     }
-  if (pmask != BLUE_NULL)
+  if (pmask != OFC_NULL)
     {
       pmask->ip_version = BLUE_FAMILY_IP ;
       pmask->u.ipv4.addr = BLUE_INADDR_NONE ;
@@ -141,23 +141,23 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
       /*
        * Count the number of entries
        */
-      found = BLUE_FALSE ;
+      found = OFC_FALSE ;
       for (ifap_index = ifap ; 
 	   ifap_index != NULL && !found ; )
 	{
-	  ignore = BLUE_FALSE;
+	  ignore = OFC_FALSE;
 #if defined (OFC_DARWIN_IGNORE_EN5)
 	  if (BlueCstrcmp(ifap_index->ifa_name, "en5") == 0)
-	    ignore = BLUE_TRUE;
+	    ignore = OFC_TRUE;
 #endif	      
 	  if (!ignore)
 	    {
-#if defined(BLUE_PARAM_LOOPBACK)
+#if defined(OFC_LOOPBACK)
 	      if ((ifap_index->ifa_flags & IFF_UP) &&
 		  match_families(ifap_index))
 		{
 		  if (max_count == index)
-		    found = BLUE_TRUE ;
+		    found = OFC_TRUE ;
 		  else
 		    {
 		      max_count++ ;
@@ -170,7 +170,7 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
 		  match_families(ifap_index))
 		{
 		  if (max_count == index)
-		    found = BLUE_TRUE ;
+		    found = OFC_TRUE ;
 		  else
 		    {
 		      max_count++ ;
@@ -189,21 +189,21 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
 	{
 	  if (ifap_index->ifa_addr->sa_family == AF_INET)
 	    {
-	      if (pinaddr != BLUE_NULL)
+	      if (pinaddr != OFC_NULL)
 		{
 		  pAddrInet = (struct sockaddr_in *) ifap_index->ifa_addr ;
 		  pinaddr->ip_version = BLUE_FAMILY_IP ;
 		  pinaddr->u.ipv4.addr = 
 		    BLUE_NET_NTOL (&pAddrInet->sin_addr.s_addr, 0) ;
 		}
-	      if (pmask != BLUE_NULL)
+	      if (pmask != OFC_NULL)
 		{
 		  pAddrInet = (struct sockaddr_in *) ifap_index->ifa_netmask ;
 		  pmask->ip_version = BLUE_FAMILY_IP ;
 		  pmask->u.ipv4.addr = 
 		    BLUE_NET_NTOL (&pAddrInet->sin_addr.s_addr, 0) ;
 		}
-	      if (pbcast != BLUE_NULL)
+	      if (pbcast != OFC_NULL)
 		{
 		  pAddrInet = (struct sockaddr_in *) ifap_index->ifa_netmask ;
 		  pbcast->ip_version = BLUE_FAMILY_IP ;
@@ -224,12 +224,12 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
 	    }
 	  else if (ifap_index->ifa_addr->sa_family == AF_INET6)
 	    {
-	      BLUE_INT scope ;
+	      OFC_INT scope ;
 
 	      pAddrInet6 = (struct sockaddr_in6 *) ifap_index->ifa_addr ;
 	      scope = pAddrInet6->sin6_scope_id ;
 
-	      if (pinaddr != BLUE_NULL)
+	      if (pinaddr != OFC_NULL)
 		{
 		  pAddrInet6 = (struct sockaddr_in6 *) ifap_index->ifa_addr ;
 		  pinaddr->ip_version = BLUE_FAMILY_IPV6 ;
@@ -239,7 +239,7 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
 		  pinaddr->u.ipv6.blue_scope = scope ;
 		}
 
-	      if (pmask != BLUE_NULL)
+	      if (pmask != OFC_NULL)
 		{
 		  pAddrInet6 = 
 		    (struct sockaddr_in6 *) ifap_index->ifa_netmask ;
@@ -249,7 +249,7 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
 		      pAddrInet6->sin6_addr.s6_addr[i] ;
 		  pmask->u.ipv6.blue_scope = scope ;
 		}
-	      if (pbcast != BLUE_NULL)
+	      if (pbcast != OFC_NULL)
 		{
 		  pbcast->ip_version = BLUE_FAMILY_IPV6 ;
 		  if (!(ifap_index->ifa_flags & IFF_LOOPBACK))
@@ -268,21 +268,21 @@ BLUE_VOID BlueNetInterfaceAddrImpl (BLUE_INT index,
     }
 }
 
-BLUE_CORE_LIB BLUE_VOID
-BlueNetInterfaceWinsImpl (BLUE_INT index, BLUE_INT *num_wins, 
+OFC_CORE_LIB OFC_VOID
+BlueNetInterfaceWinsImpl (OFC_INT index, OFC_INT *num_wins, 
 			  BLUE_IPADDR **winslist)
 {
   /*
    * This is not provided by the platform
    */
-  if (num_wins != BLUE_NULL)
+  if (num_wins != OFC_NULL)
     *num_wins = 0 ;
-  if (winslist != BLUE_NULL)
-    *winslist = BLUE_NULL ;
+  if (winslist != OFC_NULL)
+    *winslist = OFC_NULL ;
 }
 
-BLUE_VOID BlueNetResolveDNSNameImpl (BLUE_LPCSTR name, 
-				     BLUE_UINT16 *num_addrs,
+OFC_VOID BlueNetResolveDNSNameImpl (OFC_LPCSTR name, 
+				     OFC_UINT16 *num_addrs,
 				     BLUE_IPADDR *ip)
 {
   struct addrinfo *res ;
@@ -290,20 +290,20 @@ BLUE_VOID BlueNetResolveDNSNameImpl (BLUE_LPCSTR name,
   struct addrinfo hints ;
   int ret ;
 
-  BLUE_INT i ;
-  BLUE_INT j ;
+  OFC_INT i ;
+  OFC_INT j ;
   BLUE_IPADDR temp ;
 
-  BlueCmemset ((BLUE_VOID *)&hints, 0, sizeof (hints)) ;
+  BlueCmemset ((OFC_VOID *)&hints, 0, sizeof (hints)) ;
 
-#if defined(BLUE_PARAM_DISCOVER_IPV6)
-#if defined(BLUE_PARAM_DISCOVER_IPV4)
+#if defined(OFC_DISCOVER_IPV6)
+#if defined(OFC_DISCOVER_IPV4)
   hints.ai_family = AF_UNSPEC ;
 #else
   hints.ai_family = AF_INET6 ;
 #endif
 #else
-#if defined(BLUE_PARAM_DISCOVER_IPV4)
+#if defined(OFC_DISCOVER_IPV4)
   hints.ai_family = AF_INET ;
 #else
 #error "Neither IPv4 nor IPv6 Configured"

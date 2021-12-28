@@ -11,25 +11,25 @@
 
 #include "ofc/heap.h"
 
-static const char *env2str[BLUE_ENV_NUM] =
+static const char *env2str[OFC_ENV_NUM] =
   {
     "OPEN_FILES_HOME",
     "OPEN_FILES_INSTALL",
     "OPEN_FILES_ROOT"
   } ;
 
-BLUE_BOOL 
-BlueEnvGetImpl (BLUE_ENV_VALUE value, BLUE_TCHAR *ptr, BLUE_SIZET len) 
+OFC_BOOL 
+BlueEnvGetImpl (OFC_ENV_VALUE value, OFC_TCHAR *ptr, OFC_SIZET len) 
 {
   char *env ;
-  BLUE_BOOL ret ;
-  BLUE_TCHAR *path ;
+  OFC_BOOL ret ;
+  OFC_TCHAR *path ;
 
   /*
    * Darwin does not support reentrant getenv
    */
-  ret = BLUE_FALSE ;
-  if (ptr != BLUE_NULL && value < BLUE_ENV_NUM)
+  ret = OFC_FALSE ;
+  if (ptr != OFC_NULL && value < OFC_ENV_NUM)
     {
       env = getenv (env2str[value]) ;
       if (env != NULL)
@@ -37,7 +37,7 @@ BlueEnvGetImpl (BLUE_ENV_VALUE value, BLUE_TCHAR *ptr, BLUE_SIZET len)
 	  path = BlueCcstr2tstr (env) ;
 	  BlueCtstrncpy (ptr, path, len) ;
 	  BlueHeapFree (path) ;
-	  ret = BLUE_TRUE ;
+	  ret = OFC_TRUE ;
 	}
 
     }

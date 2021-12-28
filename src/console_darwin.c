@@ -25,9 +25,9 @@
 #undef LOG_TO_FILE
 #define LOG_FILE "/Users/rschmitt/bin/connectedsmb.log"
 
-BLUE_INT g_fd = -1 ;
+OFC_INT g_fd = -1 ;
 
-static BLUE_VOID open_log(BLUE_VOID)
+static OFC_VOID open_log(OFC_VOID)
 {
 #if defined(LOG_TO_FILE)
   g_fd = open (LOG_FILE, O_CREAT | O_WRONLY, S_IRWXU | S_IRWXG | S_IRWXO);
@@ -36,7 +36,7 @@ static BLUE_VOID open_log(BLUE_VOID)
 #endif
 }
 
-BLUE_VOID BlueWriteStdOutImpl (BLUE_CCHAR *obuf, BLUE_SIZET len)
+OFC_VOID BlueWriteStdOutImpl (OFC_CCHAR *obuf, OFC_SIZET len)
 {
   if (g_fd == -1)
     open_log() ;
@@ -44,7 +44,7 @@ BLUE_VOID BlueWriteStdOutImpl (BLUE_CCHAR *obuf, BLUE_SIZET len)
   fsync (g_fd) ;
 }
 
-BLUE_VOID BlueWriteConsoleImpl (BLUE_CCHAR *obuf)
+OFC_VOID BlueWriteConsoleImpl (OFC_CCHAR *obuf)
 {
   if (g_fd == -1)
     open_log();
@@ -52,7 +52,7 @@ BLUE_VOID BlueWriteConsoleImpl (BLUE_CCHAR *obuf)
   fsync (g_fd) ;
 }
 
-BLUE_VOID BlueReadStdInImpl (BLUE_CHAR *inbuf, BLUE_SIZET len)
+OFC_VOID BlueReadStdInImpl (OFC_CHAR *inbuf, OFC_SIZET len)
 {
   fgets (inbuf, (int) len, stdin) ;
   if (BlueCstrlen (inbuf) < len)
@@ -60,7 +60,7 @@ BLUE_VOID BlueReadStdInImpl (BLUE_CHAR *inbuf, BLUE_SIZET len)
   inbuf[len-1] = '\0' ;
 }
 
-BLUE_VOID BlueReadPasswordImpl (BLUE_CHAR *inbuf, BLUE_SIZET len)
+OFC_VOID BlueReadPasswordImpl (OFC_CHAR *inbuf, OFC_SIZET len)
 {
   char *pass ;
 

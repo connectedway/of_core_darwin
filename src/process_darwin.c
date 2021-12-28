@@ -26,7 +26,7 @@
 
 extern char **environ ;
 
-BLUE_PROCESS_ID BlueProcessGetImpl (BLUE_VOID)
+BLUE_PROCESS_ID BlueProcessGetImpl (OFC_VOID)
 {
   pid_t pid ;
 
@@ -34,7 +34,7 @@ BLUE_PROCESS_ID BlueProcessGetImpl (BLUE_VOID)
   return ((BLUE_PROCESS_ID) pid) ;
 }
 
-BLUE_VOID BlueProcessBlockSignal (BLUE_INT signal)
+OFC_VOID BlueProcessBlockSignal (OFC_INT signal)
 {
   sigset_t new_set ;
   sigset_t old_set ;
@@ -46,54 +46,54 @@ BLUE_VOID BlueProcessBlockSignal (BLUE_INT signal)
 
 }
 
-BLUE_VOID BlueProcessUnblockSignal (BLUE_INT signal)
+OFC_VOID BlueProcessUnblockSignal (OFC_INT signal)
 {
   sigset_t new_set ;
 
   sigemptyset (&new_set) ;
   sigaddset (&new_set, signal) ;
 
-  pthread_sigmask (SIG_UNBLOCK, &new_set, BLUE_NULL) ;
+  pthread_sigmask (SIG_UNBLOCK, &new_set, OFC_NULL) ;
 }
 
-BLUE_BOOL 
+OFC_BOOL 
 BlueProcessTermTrapImpl (BLUE_PROCESS_TRAP_HANDLER trap)
 {
   struct sigaction action ;
-  BLUE_BOOL ret ;
+  OFC_BOOL ret ;
 
-  ret = BLUE_FALSE ;
+  ret = OFC_FALSE ;
   sigemptyset (&action.sa_mask) ;
   action.sa_handler = trap ;
   action.sa_flags = 0 ;
 
-  if (sigaction (SIGTERM, &action, BLUE_NULL) == 0)
-    ret = BLUE_TRUE ;
+  if (sigaction (SIGTERM, &action, OFC_NULL) == 0)
+    ret = OFC_TRUE ;
 
   return (ret) ;
 }
 
-BLUE_HANDLE BlueProcessExecImpl (BLUE_CTCHAR *name,
-				 BLUE_TCHAR *uname,
-				 BLUE_INT argc,
-				 BLUE_CHAR **argv) 
+BLUE_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
+				 OFC_TCHAR *uname,
+				 OFC_INT argc,
+				 OFC_CHAR **argv) 
 {
   BLUE_HANDLE hProcess ;
-  BLUE_CHAR *cname ;
-  BLUE_CHAR **exec_argv ;
-  BLUE_INT i ;
+  OFC_CHAR *cname ;
+  OFC_CHAR **exec_argv ;
+  OFC_INT i ;
   pid_t pid ;
   int ret ;
-  BLUE_CHAR *cuname ;
+  OFC_CHAR *cuname ;
   struct passwd *user ;
   volatile pid_t pid2 ;
 
   cname = BlueCtstr2cstr (name) ;
   cuname = BlueCtstr2cstr (uname) ;
-  exec_argv = BlueHeapMalloc (sizeof (BLUE_CHAR *) * (argc+1)) ;
+  exec_argv = BlueHeapMalloc (sizeof (OFC_CHAR *) * (argc+1)) ;
   for (i = 0 ; i < argc ; i++)
     exec_argv[i] = argv[i] ;
-  exec_argv[i] = BLUE_NULL ;
+  exec_argv[i] = OFC_NULL ;
 
   hProcess = BLUE_INVALID_HANDLE_VALUE ;
 
@@ -117,10 +117,10 @@ BLUE_HANDLE BlueProcessExecImpl (BLUE_CTCHAR *name,
 	{
 	  int ret3 ;
 
-	  if (cuname != BLUE_NULL)
+	  if (cuname != OFC_NULL)
 	    {
 	      user = getpwnam(cuname) ;
-	      if (user != BLUE_NULL)
+	      if (user != OFC_NULL)
 		{
 		  setgid (user->pw_gid) ;
 		  setuid (user->pw_uid) ;
@@ -153,9 +153,9 @@ BLUE_HANDLE BlueProcessExecImpl (BLUE_CTCHAR *name,
       waitpid (pid, &ret, 0) ;
       if (ret == EX_OK)
 	{
-	  BLUE_DWORD_PTR pid2l = (BLUE_DWORD_PTR) pid2 ;
+	  OFC_DWORD_PTR pid2l = (OFC_DWORD_PTR) pid2 ;
 	  hProcess = 
-	    BlueHandleCreate (BLUE_HANDLE_PROCESS, (BLUE_VOID *) pid2l) ;
+	    BlueHandleCreate (BLUE_HANDLE_PROCESS, (OFC_VOID *) pid2l) ;
 	}
     }
 
@@ -177,7 +177,7 @@ BLUE_PROCESS_ID BlueProcessGetIdImpl (BLUE_HANDLE hProcess)
   return ((BLUE_PROCESS_ID) pid) ;
 }
   
-BLUE_VOID BlueProcessTermImpl (BLUE_HANDLE hProcess) 
+OFC_VOID BlueProcessTermImpl (BLUE_HANDLE hProcess) 
 {
   pid_t pid ;
 
@@ -189,17 +189,17 @@ BLUE_VOID BlueProcessTermImpl (BLUE_HANDLE hProcess)
   BlueHandleUnlock (hProcess) ;
 }
 
-BLUE_VOID BlueProcessKillImpl (BLUE_PROCESS_ID pid)
+OFC_VOID BlueProcessKillImpl (BLUE_PROCESS_ID pid)
 {
   kill (pid, SIGTERM) ;
 }
 
-BLUE_VOID BlueProcessSetPriority (BLUE_PROCESS_PRIORITY prio) 
+OFC_VOID BlueProcessSetPriority (BLUE_PROCESS_PRIORITY prio) 
 {
 }
 
-BLUE_VOID
-BlueProcessCrashImpl (BLUE_CCHAR *obuf)
+OFC_VOID
+BlueProcessCrashImpl (OFC_CCHAR *obuf)
 {
   BlueWriteConsoleImpl (obuf) ;
   _Exit(EX_SOFTWARE) ;

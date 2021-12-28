@@ -30,9 +30,9 @@ static const int _DAYS_BEFORE_MONTH[12] =
 
 #define _DAYS_IN_YEAR(year) (_ISLEAP(year) ? 366 : 365)
 
-static BLUE_UINT32 BlueTimeMakeTime (struct tm *tm)
+static OFC_UINT32 BlueTimeMakeTime (struct tm *tm)
 {
-  BLUE_UINT32 tim ;
+  OFC_UINT32 tim ;
   long days ;
   int year ;
 
@@ -68,7 +68,7 @@ static BLUE_UINT32 BlueTimeMakeTime (struct tm *tm)
   return tim;
 }
 
-static BLUE_VOID BlueTimeLocalTime (time_t time, struct tm *tm)
+static OFC_VOID BlueTimeLocalTime (time_t time, struct tm *tm)
 {
   time_t days_in_year ;
   time_t ticks_in_day ;
@@ -138,9 +138,9 @@ static BLUE_VOID BlueTimeLocalTime (time_t time, struct tm *tm)
 }
 
 #undef DEBUG_WRAP
-BLUE_MSTIME BlueTimeGetNowImpl(BLUE_VOID) 
+OFC_MSTIME BlueTimeGetNowImpl(OFC_VOID) 
 {
-  BLUE_MSTIME ms ;
+  OFC_MSTIME ms ;
   struct timeval tp ;
 #if defined(DEBUG_WRAP)
   unsigned long ticks;
@@ -152,18 +152,18 @@ BLUE_MSTIME BlueTimeGetNowImpl(BLUE_VOID)
   ticks = (tp.tv_sec * 500) + (tp.tv_usec / 500) ;
 #if 1
   /* for int32 */
-  ms = (BLUE_MSTIME)(ticks) * 2+2146690000;
+  ms = (OFC_MSTIME)(ticks) * 2+2146690000;
 #else
   /* for int16 */
-  ms = (BLUE_MSTIME)(ticks) * 2+32512;
+  ms = (OFC_MSTIME)(ticks) * 2+32512;
 #endif
 #else
-  ms = (BLUE_MSTIME)((tp.tv_sec * 1000) + (tp.tv_usec / 1000)) ;
+  ms = (OFC_MSTIME)((tp.tv_sec * 1000) + (tp.tv_usec / 1000)) ;
 #endif
   return (ms) ;
 }
 
-BLUE_VOID BlueTimeGetFileTimeImpl (BLUE_FILETIME *filetime)
+OFC_VOID BlueTimeGetFileTimeImpl (OFC_FILETIME *filetime)
 {
   struct timespec tp ;
   /*
@@ -176,11 +176,11 @@ BLUE_VOID BlueTimeGetFileTimeImpl (BLUE_FILETIME *filetime)
   EpochTimeToFileTime (tp.tv_sec, tp.tv_nsec, filetime) ;
 }
 
-BLUE_UINT16 BlueTimeGetTimeZoneImpl (BLUE_VOID)
+OFC_UINT16 BlueTimeGetTimeZoneImpl (OFC_VOID)
 {
   struct tm *gm ;
   time_t ts ;
-  BLUE_UINT16 ret ;
+  OFC_UINT16 ret ;
 
   time(&ts) ;
   gm = localtime (&ts) ;
@@ -195,15 +195,15 @@ BLUE_UINT16 BlueTimeGetTimeZoneImpl (BLUE_VOID)
   return (ret) ;
 }
 
-BLUE_BOOL BlueFileTimeToDosDateTimeImpl (const BLUE_FILETIME *lpFileTime,
-					 BLUE_WORD *lpFatDate,
-					 BLUE_WORD *lpFatTime)
+OFC_BOOL BlueFileTimeToDosDateTimeImpl (const OFC_FILETIME *lpFileTime,
+					 OFC_WORD *lpFatDate,
+					 OFC_WORD *lpFatTime)
 {
   struct timespec tp ;
   struct tm tm;
 
-  FileTimeToEpochTime (lpFileTime, (BLUE_ULONG *) &tp.tv_sec, 
-		       (BLUE_ULONG *) &tp.tv_nsec) ;
+  FileTimeToEpochTime (lpFileTime, (OFC_ULONG *) &tp.tv_sec, 
+		       (OFC_ULONG *) &tp.tv_nsec) ;
 
   BlueTimeLocalTime (tp.tv_sec, &tm) ;
 
@@ -216,22 +216,22 @@ BLUE_BOOL BlueFileTimeToDosDateTimeImpl (const BLUE_FILETIME *lpFileTime,
 				 lpFatDate,
 				 lpFatTime) ;
 
-  return (BLUE_TRUE) ;
+  return (OFC_TRUE) ;
 }
 
-BLUE_BOOL BlueDosDateTimeToFileTimeImpl (BLUE_WORD FatDate, 
-					 BLUE_WORD FatTime,
-					 BLUE_FILETIME *lpFileTime)
+OFC_BOOL BlueDosDateTimeToFileTimeImpl (OFC_WORD FatDate, 
+					 OFC_WORD FatTime,
+					 OFC_FILETIME *lpFileTime)
 {
   struct timespec tp ;
   struct tm tm;
 
-  BLUE_UINT16 mon ;
-  BLUE_UINT16 day ;
-  BLUE_UINT16 year ;
-  BLUE_UINT16 hour ;
-  BLUE_UINT16 min ;
-  BLUE_UINT16 sec ;
+  OFC_UINT16 mon ;
+  OFC_UINT16 day ;
+  OFC_UINT16 year ;
+  OFC_UINT16 hour ;
+  OFC_UINT16 min ;
+  OFC_UINT16 sec ;
 
   BlueTimeDosDateTimeToElements (FatDate,
 				 FatTime,
@@ -253,19 +253,19 @@ BLUE_BOOL BlueDosDateTimeToFileTimeImpl (BLUE_WORD FatDate,
 
   EpochTimeToFileTime (tp.tv_sec, tp.tv_nsec, lpFileTime) ;
 
-  return (BLUE_TRUE) ;
+  return (OFC_TRUE) ;
 }
 
-BLUE_MSTIME BlueTimeGetRuntimeImpl (BLUE_VOID)
+OFC_MSTIME BlueTimeGetRuntimeImpl (OFC_VOID)
 {
   int ret ;
   struct rusage r_usage ;
-  BLUE_MSTIME runtime ;
+  OFC_MSTIME runtime ;
 
   runtime = 0 ;
   ret = getrusage (RUSAGE_SELF, &r_usage) ;
   if (ret == 0)
-    runtime = (BLUE_MSTIME) ((r_usage.ru_utime.tv_sec + 
+    runtime = (OFC_MSTIME) ((r_usage.ru_utime.tv_sec + 
 			      r_usage.ru_stime.tv_sec) * 1000000 + 
 			     (r_usage.ru_utime.tv_usec + 
 			      r_usage.ru_stime.tv_usec)) ;

@@ -29,10 +29,10 @@
 typedef struct
 {
   pthread_t thread ;
-  BLUE_DWORD (*scheduler)(BLUE_HANDLE hThread, BLUE_VOID *context)  ;
-  BLUE_VOID *context ;
-  BLUE_DWORD ret ;
-  BLUE_BOOL deleteMe ;
+  OFC_DWORD (*scheduler)(BLUE_HANDLE hThread, OFC_VOID *context)  ;
+  OFC_VOID *context ;
+  OFC_DWORD ret ;
+  OFC_BOOL deleteMe ;
   BLUE_HANDLE handle ;
   BLUE_THREAD_DETACHSTATE detachstate ;
   BLUE_HANDLE wait_set ;
@@ -49,7 +49,7 @@ static void *BlueThreadLaunch (void *arg)
 						darwinThread->context) ;
 
   if (darwinThread->hNotify != BLUE_HANDLE_NULL)
-    BlueEventSet (darwinThread->hNotify) ;
+    ofc_event_set(darwinThread->hNotify) ;
 
   if (darwinThread->detachstate == BLUE_THREAD_DETACH)
     {
@@ -57,14 +57,14 @@ static void *BlueThreadLaunch (void *arg)
       BlueHandleDestroy (darwinThread->handle) ;
       BlueHeapFree (darwinThread) ;
     }
-  return (BLUE_NULL) ;
+  return (OFC_NULL) ;
 }
 
-BLUE_HANDLE BlueThreadCreateImpl (BLUE_DWORD(scheduler)(BLUE_HANDLE hThread,
-							BLUE_VOID *context),
-				  BLUE_CCHAR *thread_name,
-				  BLUE_INT thread_instance,
-				  BLUE_VOID *context,
+BLUE_HANDLE BlueThreadCreateImpl (OFC_DWORD(scheduler)(BLUE_HANDLE hThread,
+							OFC_VOID *context),
+				  OFC_CCHAR *thread_name,
+				  OFC_INT thread_instance,
+				  OFC_VOID *context,
 				  BLUE_THREAD_DETACHSTATE detachstate,
 				  BLUE_HANDLE hNotify)
 {
@@ -74,10 +74,10 @@ BLUE_HANDLE BlueThreadCreateImpl (BLUE_DWORD(scheduler)(BLUE_HANDLE hThread,
 
   ret = BLUE_HANDLE_NULL ;
   darwinThread = BlueHeapMalloc (sizeof (DARWIN_THREAD)) ;
-  if (darwinThread != BLUE_NULL)
+  if (darwinThread != OFC_NULL)
     {
       darwinThread->wait_set = BLUE_HANDLE_NULL ;
-      darwinThread->deleteMe = BLUE_FALSE ;
+      darwinThread->deleteMe = OFC_FALSE ;
       darwinThread->scheduler = scheduler ;
       darwinThread->context = context ;
       darwinThread->hNotify = hNotify ;
@@ -104,44 +104,44 @@ BLUE_HANDLE BlueThreadCreateImpl (BLUE_DWORD(scheduler)(BLUE_HANDLE hThread,
   return (ret) ;
 }
 
-BLUE_VOID 
+OFC_VOID 
 BlueThreadSetWaitSetImpl (BLUE_HANDLE hThread, BLUE_HANDLE wait_set) 
 {
   DARWIN_THREAD *darwinThread ;
 
   darwinThread = BlueHandleLock (hThread) ;
-  if (darwinThread != BLUE_NULL)
+  if (darwinThread != OFC_NULL)
     {
       darwinThread->wait_set = wait_set ;
       BlueHandleUnlock (hThread) ;
     }
 }
 
-BLUE_VOID BlueThreadDeleteImpl (BLUE_HANDLE hThread)
+OFC_VOID BlueThreadDeleteImpl (BLUE_HANDLE hThread)
 {
   DARWIN_THREAD *darwinThread ;
 
   darwinThread = BlueHandleLock (hThread) ;
-  if (darwinThread != BLUE_NULL)
+  if (darwinThread != OFC_NULL)
     {
-      darwinThread->deleteMe = BLUE_TRUE ;
+      darwinThread->deleteMe = OFC_TRUE ;
       if (darwinThread->wait_set != BLUE_HANDLE_NULL)
 	BlueWaitSetWake (darwinThread->wait_set) ;
       BlueHandleUnlock (hThread) ;
     }
 }
 
-BLUE_VOID BlueThreadWaitImpl (BLUE_HANDLE hThread)
+OFC_VOID BlueThreadWaitImpl (BLUE_HANDLE hThread)
 {
   DARWIN_THREAD *darwinThread ;
   int ret ;
 
   darwinThread = BlueHandleLock (hThread) ;
-  if (darwinThread != BLUE_NULL)
+  if (darwinThread != OFC_NULL)
     {
       if (darwinThread->detachstate == BLUE_THREAD_JOIN)
 	{
-	  ret = pthread_join (darwinThread->thread, BLUE_NULL) ;
+	  ret = pthread_join (darwinThread->thread, OFC_NULL) ;
 	  BlueHandleDestroy (darwinThread->handle) ;
 	  BlueHeapFree (darwinThread) ;
 	}
@@ -149,23 +149,23 @@ BLUE_VOID BlueThreadWaitImpl (BLUE_HANDLE hThread)
     }
 }
 
-BLUE_BOOL BlueThreadIsDeletingImpl (BLUE_HANDLE hThread)
+OFC_BOOL BlueThreadIsDeletingImpl (BLUE_HANDLE hThread)
 {
   DARWIN_THREAD *darwinThread ;
-  BLUE_BOOL ret ;
+  OFC_BOOL ret ;
 
-  ret = BLUE_FALSE ;
+  ret = OFC_FALSE ;
   darwinThread = BlueHandleLock (hThread) ;
-  if (darwinThread != BLUE_NULL)
+  if (darwinThread != OFC_NULL)
     {
       if (darwinThread->deleteMe)
-	ret = BLUE_TRUE ;
+	ret = OFC_TRUE ;
       BlueHandleUnlock (hThread) ;
     }
   return (ret) ;
 }
 
-BLUE_VOID BlueSleepImpl (BLUE_DWORD milliseconds)
+OFC_VOID BlueSleepImpl (OFC_DWORD milliseconds)
 {
   useconds_t useconds ;
 
@@ -183,15 +183,15 @@ BLUE_VOID BlueSleepImpl (BLUE_DWORD milliseconds)
   pthread_testcancel() ;
 }
 
-BLUE_DWORD BlueThreadCreateVariableImpl (BLUE_VOID)
+OFC_DWORD BlueThreadCreateVariableImpl (OFC_VOID)
 {
   pthread_key_t key ;
 
   pthread_key_create (&key, NULL) ;
-  return ((BLUE_DWORD) key) ;
+  return ((OFC_DWORD) key) ;
 }
 
-BLUE_VOID BlueThreadDestroyVariableImpl (BLUE_DWORD dkey)
+OFC_VOID BlueThreadDestroyVariableImpl (OFC_DWORD dkey)
 {
   pthread_key_t key ;
   key = (pthread_key_t) dkey ;
@@ -199,12 +199,12 @@ BLUE_VOID BlueThreadDestroyVariableImpl (BLUE_DWORD dkey)
   pthread_key_delete (key);
 }
 
-BLUE_DWORD_PTR BlueThreadGetVariableImpl (BLUE_DWORD var) 
+OFC_DWORD_PTR BlueThreadGetVariableImpl (OFC_DWORD var) 
 {
-  return ((BLUE_DWORD_PTR) pthread_getspecific ((pthread_key_t) var)) ;
+  return ((OFC_DWORD_PTR) pthread_getspecific ((pthread_key_t) var)) ;
 }
 
-BLUE_VOID BlueThreadSetVariableImpl (BLUE_DWORD var, BLUE_DWORD_PTR val) 
+OFC_VOID BlueThreadSetVariableImpl (OFC_DWORD var, OFC_DWORD_PTR val) 
 {
   pthread_setspecific ((pthread_key_t) var, (const void *) val) ;
 }  
@@ -212,23 +212,23 @@ BLUE_VOID BlueThreadSetVariableImpl (BLUE_DWORD var, BLUE_DWORD_PTR val)
 /*
  * These routines are noops on platforms that support TLS
  */
-BLUE_CORE_LIB BLUE_VOID
-BlueThreadCreateLocalStorageImpl (BLUE_VOID) 
+OFC_CORE_LIB OFC_VOID
+BlueThreadCreateLocalStorageImpl (OFC_VOID) 
 {
 }
 
-BLUE_CORE_LIB BLUE_VOID
-BlueThreadDestroyLocalStorageImpl (BLUE_VOID)
+OFC_CORE_LIB OFC_VOID
+BlueThreadDestroyLocalStorageImpl (OFC_VOID)
 {
 }
 
-BLUE_CORE_LIB BLUE_VOID
-BlueThreadInitImpl (BLUE_VOID)
+OFC_CORE_LIB OFC_VOID
+BlueThreadInitImpl (OFC_VOID)
 {
 }
 
-BLUE_CORE_LIB BLUE_VOID
-BlueThreadDestroyImpl (BLUE_VOID)
+OFC_CORE_LIB OFC_VOID
+BlueThreadDestroyImpl (OFC_VOID)
 {
 }
 
