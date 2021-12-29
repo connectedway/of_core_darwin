@@ -16,8 +16,8 @@
 #include "ofc/libc.h"
 
 /**
- * \defgroup BlueConsoleDarwin Darwin Console Interface
- * \ingroup BlueDarwin
+ * \defgroup console_darwin Darwin Console Interface
+ * \ingroup darwin
  */
 
 /** \{ */
@@ -36,7 +36,7 @@ static OFC_VOID open_log(OFC_VOID)
 #endif
 }
 
-OFC_VOID BlueWriteStdOutImpl (OFC_CCHAR *obuf, OFC_SIZET len)
+OFC_VOID ofc_write_stdout_impl (OFC_CCHAR *obuf, OFC_SIZET len)
 {
   if (g_fd == -1)
     open_log() ;
@@ -44,7 +44,7 @@ OFC_VOID BlueWriteStdOutImpl (OFC_CCHAR *obuf, OFC_SIZET len)
   fsync (g_fd) ;
 }
 
-OFC_VOID BlueWriteConsoleImpl (OFC_CCHAR *obuf)
+OFC_VOID ofc_write_console_impl (OFC_CCHAR *obuf)
 {
   if (g_fd == -1)
     open_log();
@@ -52,7 +52,7 @@ OFC_VOID BlueWriteConsoleImpl (OFC_CCHAR *obuf)
   fsync (g_fd) ;
 }
 
-OFC_VOID BlueReadStdInImpl (OFC_CHAR *inbuf, OFC_SIZET len)
+OFC_VOID ofc_read_stdin_impl (OFC_CHAR *inbuf, OFC_SIZET len)
 {
   fgets (inbuf, (int) len, stdin) ;
   if (ofc_strlen (inbuf) < len)
@@ -60,7 +60,7 @@ OFC_VOID BlueReadStdInImpl (OFC_CHAR *inbuf, OFC_SIZET len)
   inbuf[len-1] = '\0' ;
 }
 
-OFC_VOID BlueReadPasswordImpl (OFC_CHAR *inbuf, OFC_SIZET len)
+OFC_VOID ofc_read_password_impl (OFC_CHAR *inbuf, OFC_SIZET len)
 {
   char *pass ;
 

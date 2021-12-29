@@ -32,8 +32,8 @@
 #include "ofc_darwin/fs_darwin.h"
 
 /**
- * \defgroup BlueWaitSetWin32 Win32 Dependent Scheduler Handling
- * \ingroup BlueWin32
+ * \defgroup waitset_darwin Darwin Dependent Scheduler Handling
+ * \ingroup darwin
  */
 
 /** \{ */
@@ -43,7 +43,7 @@ typedef struct
   int pipe_files[2] ;
 } DARWIN_WAIT_SET ;
 
-OFC_VOID BlueWaitSetCreateImpl (WAIT_SET *pWaitSet) 
+OFC_VOID ofc_waitset_create_impl (WAIT_SET *pWaitSet)
 {
   DARWIN_WAIT_SET *DarwinWaitSet ;
 
@@ -56,7 +56,7 @@ OFC_VOID BlueWaitSetCreateImpl (WAIT_SET *pWaitSet)
 	 fcntl (DarwinWaitSet->pipe_files[1], F_GETFL) | O_NONBLOCK) ;
 }
 
-OFC_VOID BlueWaitSetDestroyImpl (WAIT_SET *pWaitSet) 
+OFC_VOID ofc_waitset_destroy_impl (WAIT_SET *pWaitSet)
 {
   DARWIN_WAIT_SET *DarwinWaitSet ;
 
@@ -73,7 +73,7 @@ typedef struct
   OFC_HANDLE hAssoc ;
 } EVENT_ELEMENT ;
 
-OFC_VOID BlueWaitSetSignalImpl (OFC_HANDLE handle, OFC_HANDLE hEvent)
+OFC_VOID ofc_waitset_signal_impl (OFC_HANDLE handle, OFC_HANDLE hEvent)
 {
   WAIT_SET *pWaitSet ;
   DARWIN_WAIT_SET *DarwinWaitSet ;
@@ -88,9 +88,9 @@ OFC_VOID BlueWaitSetSignalImpl (OFC_HANDLE handle, OFC_HANDLE hEvent)
     }
 }
 
-OFC_VOID BlueWaitSetWakeImpl (OFC_HANDLE handle)
+OFC_VOID ofc_waitset_wake_impl (OFC_HANDLE handle)
 {
-  BlueWaitSetSignalImpl (handle, OFC_HANDLE_NULL) ;
+  ofc_waitset_signal_impl (handle, OFC_HANDLE_NULL) ;
 }
 
 OFC_HANDLE PollEvent (OFC_INT fd, OFC_HANDLE eventQueue)
@@ -116,9 +116,9 @@ OFC_HANDLE PollEvent (OFC_INT fd, OFC_HANDLE eventQueue)
 	    wake = OFC_TRUE ;
 	  else
 	    {
-	      for (eventElement = BlueQfirst (eventQueue) ;
+	      for (eventElement = ofc_queue_first (eventQueue) ;
 		   eventElement != OFC_NULL && eventElement->hEvent != hEvent ;
-		   eventElement = BlueQnext (eventQueue, eventElement) ) ;
+		   eventElement = ofc_queue_next (eventQueue, eventElement) ) ;
 
 	      if (eventElement != OFC_NULL)
 		{
@@ -138,7 +138,7 @@ OFC_HANDLE PollEvent (OFC_INT fd, OFC_HANDLE eventQueue)
   return (triggered_event);
 }
 
-OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
+OFC_HANDLE ofc_waitset_wait_impl (OFC_HANDLE handle)
 {
   WAIT_SET *pWaitSet ;
   DARWIN_WAIT_SET *DarwinWaitSet ;
@@ -153,7 +153,7 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
   OFC_FST_TYPE fsType ;
 #endif
   struct pollfd *darwin_handle_list ;
-  OFC_HANDLE *blue_handle_list ;
+  OFC_HANDLE *ofc_handle_list ;
 
   nfds_t wait_count ;
   int wait_index ;
@@ -170,13 +170,13 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 
   if (pWaitSet != OFC_NULL)
     {
-      eventQueue = BlueQcreate () ;
+      eventQueue = ofc_queue_create () ;
       leastWait = OFC_MAX_SCHED_WAIT ;
       timer_event = OFC_HANDLE_NULL ;
 
       wait_count = 0 ;
       darwin_handle_list = ofc_malloc (sizeof (struct pollfd)) ;
-      blue_handle_list = ofc_malloc (sizeof (OFC_HANDLE)) ;
+      ofc_handle_list = ofc_malloc (sizeof (OFC_HANDLE)) ;
 
       DarwinWaitSet = pWaitSet->impl ;
 
@@ -189,17 +189,17 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
       darwin_handle_list[wait_count].fd = DarwinWaitSet->pipe_files[0] ;
       darwin_handle_list[wait_count].events = POLLIN ;
       darwin_handle_list[wait_count].revents = 0 ;
-      blue_handle_list[wait_count] = OFC_HANDLE_NULL ;
+      ofc_handle_list[wait_count] = OFC_HANDLE_NULL ;
 
       wait_count++ ;
 
       for (hEventHandle = 
-	     (OFC_HANDLE) BlueQfirst (pWaitSet->hHandleQueue) ;
+	     (OFC_HANDLE) ofc_queue_first (pWaitSet->hHandleQueue) ;
 		   hEventHandle != OFC_HANDLE_NULL &&
 		   triggered_event == OFC_HANDLE_NULL ;
 	   hEventHandle = 
-	     (OFC_HANDLE) BlueQnext (pWaitSet->hHandleQueue,
-                                 (OFC_VOID *) hEventHandle) )
+	     (OFC_HANDLE) ofc_queue_next (pWaitSet->hHandleQueue,
+                                      (OFC_VOID *) hEventHandle) )
 	{
 	  switch (ofc_handle_get_type(hEventHandle))
 	    {
@@ -219,8 +219,8 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 	      break ;
 
 	    case OFC_HANDLE_WAIT_QUEUE:
-	      hEvent = BlueWaitQGetEventHandle (hEventHandle) ;
-	      if (!BlueWaitQempty (hEventHandle))
+	      hEvent = ofc_waitq_get_event_handle (hEventHandle) ;
+	      if (!ofc_waitq_empty (hEventHandle))
 		{
 		  triggered_event = hEventHandle ;
 		}
@@ -229,7 +229,7 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 		  eventElement = ofc_malloc (sizeof (EVENT_ELEMENT)) ;
 		  eventElement->hAssoc = hEventHandle ;
 		  eventElement->hEvent = hEvent ;
-		  BlueQenqueue (eventQueue, eventElement) ;
+		  ofc_enqueue (eventQueue, eventElement) ;
 		}
 	      break ;
 
@@ -242,15 +242,15 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 		  darwin_handle_list = 
 		    ofc_realloc (darwin_handle_list,
 				     sizeof (struct pollfd) * (wait_count+1)) ;
-		  blue_handle_list = 
-		    ofc_realloc (blue_handle_list,
+		  ofc_handle_list = 
+		    ofc_realloc (ofc_handle_list,
                              sizeof (OFC_HANDLE) * (wait_count + 1)) ;
 		  fsHandle = OfcFileGetFSHandle (hEventHandle) ;
 		  darwin_handle_list[wait_count].fd = 
 		    OfcFSDarwinGetFD (fsHandle) ;
 		  darwin_handle_list[wait_count].events = 0 ;
 		  darwin_handle_list[wait_count].revents = 0 ;
-		  blue_handle_list[wait_count] = hEventHandle ;
+		  ofc_handle_list[wait_count] = hEventHandle ;
 		  wait_count++ ;
 		}
 #endif
@@ -262,17 +262,17 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 	      darwin_handle_list = 
 		ofc_realloc (darwin_handle_list,
 				 sizeof (struct pollfd) * (wait_count+1)) ;
-	      blue_handle_list = 
-		ofc_realloc (blue_handle_list,
+	      ofc_handle_list = 
+		ofc_realloc (ofc_handle_list,
                          sizeof (OFC_HANDLE) * (wait_count + 1)) ;
 	      
-	      darwinHandle = BlueSocketGetImpl (hEventHandle) ;
+	      darwinHandle = ofc_socket_get_impl (hEventHandle) ;
 	      darwin_handle_list[wait_count].fd = 
-		BlueSocketImplGetFD (darwinHandle) ;
+		ofc_socket_impl_get_fd (darwinHandle) ;
 	      darwin_handle_list[wait_count].events = 
-		BlueSocketImplGetEvent (darwinHandle) ;
+		ofc_socket_impl_get_event (darwinHandle) ;
 	      darwin_handle_list[wait_count].revents = 0 ;
-	      blue_handle_list[wait_count] = hEventHandle ;
+	      ofc_handle_list[wait_count] = hEventHandle ;
 	      wait_count++ ;
 	      break ;
 
@@ -288,15 +288,15 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 		  eventElement = ofc_malloc (sizeof (EVENT_ELEMENT)) ;
 		  eventElement->hAssoc = hEventHandle ;
 		  eventElement->hEvent = hEvent ;
-		  BlueQenqueue (eventQueue, eventElement) ;
+		  ofc_enqueue (eventQueue, eventElement) ;
 		}
 #endif
 	      break ;
 
 	    case OFC_HANDLE_FSSMB_OVERLAPPED:
 	      hWaitQ = OfcFileGetOverlappedWaitQ (hEventHandle) ;
-	      hEvent = BlueWaitQGetEventHandle (hWaitQ) ;
-	      if (!BlueWaitQempty (hWaitQ))
+	      hEvent = ofc_waitq_get_event_handle (hWaitQ) ;
+	      if (!ofc_waitq_empty (hWaitQ))
 		{
 		  triggered_event = hEventHandle ;
 		}
@@ -305,7 +305,7 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 		  eventElement = ofc_malloc (sizeof (EVENT_ELEMENT)) ;
 		  eventElement->hAssoc = hEventHandle ;
 		  eventElement->hEvent = hEvent ;
-		  BlueQenqueue (eventQueue, eventElement) ;
+		  ofc_enqueue (eventQueue, eventElement) ;
 		}
 	      break ;
 
@@ -321,12 +321,12 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 		  eventElement = ofc_malloc (sizeof (EVENT_ELEMENT)) ;
 		  eventElement->hAssoc = hEventHandle ;
 		  eventElement->hEvent = hEventHandle ;
-		  BlueQenqueue (eventQueue, eventElement) ;
+		  ofc_enqueue (eventQueue, eventElement) ;
 		}
 	      break ;
 
 	    case OFC_HANDLE_TIMER:
-	      wait_time = BlueTimerGetWaitTime (hEventHandle) ;
+	      wait_time = ofc_timer_get_wait_time (hEventHandle) ;
 	      if (wait_time == 0)
 		triggered_event = hEventHandle ;
 	      else
@@ -361,32 +361,32 @@ OFC_HANDLE BlueWaitSetWaitImpl (OFC_HANDLE handle)
 		  PollEvent(DarwinWaitSet->pipe_files[0], eventQueue) ;
 	      else if (wait_index < wait_count)
 		{
-		  BlueSocketImplSetEvent 
-		    (BlueSocketGetImpl (blue_handle_list[wait_index]),
-		     darwin_handle_list[wait_index].revents) ;
+		  ofc_socket_impl_set_event
+		    (ofc_socket_get_impl (ofc_handle_list[wait_index]),
+             darwin_handle_list[wait_index].revents) ;
 		      
 		  if (darwin_handle_list[wait_index].revents != 0)
-		    triggered_event = blue_handle_list[wait_index] ;
+		    triggered_event = ofc_handle_list[wait_index] ;
 		}
 	    }
 	}
 
-      for (eventElement = BlueQdequeue (eventQueue) ;
+      for (eventElement = ofc_dequeue (eventQueue) ;
 	   eventElement != OFC_NULL ;
-	   eventElement = BlueQdequeue (eventQueue))
+	   eventElement = ofc_dequeue (eventQueue))
 	ofc_free (eventElement) ;
 
-      BlueQdestroy (eventQueue) ;
+      ofc_queue_destroy (eventQueue) ;
 
       ofc_free (darwin_handle_list) ;
-      ofc_free (blue_handle_list) ;
+      ofc_free (ofc_handle_list) ;
 
     }
   return (triggered_event) ;
 }
 
-OFC_VOID BlueWaitSetSetAssocImpl (OFC_HANDLE hEvent,
-                                  OFC_HANDLE hApp, OFC_HANDLE hSet)
+OFC_VOID ofc_waitset_set_assoc_impl (OFC_HANDLE hEvent,
+                                     OFC_HANDLE hApp, OFC_HANDLE hSet)
 {
   OFC_HANDLE hAssoc ;
 
@@ -407,7 +407,7 @@ OFC_VOID BlueWaitSetSetAssocImpl (OFC_HANDLE hEvent,
       break ;
 
     case OFC_HANDLE_WAIT_QUEUE:
-      hAssoc = BlueWaitQGetEventHandle (hEvent) ;
+      hAssoc = ofc_waitq_get_event_handle (hEvent) ;
       ofc_handle_set_app (hAssoc, hApp, hSet) ;
       break ;
 
@@ -433,8 +433,8 @@ OFC_VOID BlueWaitSetSetAssocImpl (OFC_HANDLE hEvent,
       break ;
     }
 }
-OFC_VOID BlueWaitSetAddImpl (OFC_HANDLE hSet, OFC_HANDLE hApp,
-                             OFC_HANDLE hEvent)
+OFC_VOID ofc_waitset_add_impl (OFC_HANDLE hSet, OFC_HANDLE hApp,
+                               OFC_HANDLE hEvent)
 {
   OFC_HANDLE hAssoc ;
 
@@ -455,16 +455,16 @@ OFC_VOID BlueWaitSetAddImpl (OFC_HANDLE hSet, OFC_HANDLE hApp,
       break ;
 
     case OFC_HANDLE_WAIT_QUEUE:
-      hAssoc = BlueWaitQGetEventHandle (hEvent) ;
+      hAssoc = ofc_waitq_get_event_handle (hEvent) ;
       ofc_handle_set_app (hAssoc, hApp, hSet) ;
-      if (!BlueWaitQempty (hEvent))
-	BlueWaitSetSignalImpl (hSet, hAssoc) ;
+      if (!ofc_waitq_empty (hEvent))
+	ofc_waitset_signal_impl (hSet, hAssoc) ;
       break ;
 
     case OFC_HANDLE_EVENT:
       ofc_handle_set_app (hEvent, hApp, hSet) ;
       if (ofc_event_test (hEvent))
-	BlueWaitSetSignalImpl (hSet, hEvent) ;
+	ofc_waitset_signal_impl (hSet, hEvent) ;
       break ;
 
     case OFC_HANDLE_FSDARWIN_OVERLAPPED:
@@ -472,7 +472,7 @@ OFC_VOID BlueWaitSetAddImpl (OFC_HANDLE hSet, OFC_HANDLE hApp,
       hAssoc = OfcFSDarwinGetOverlappedEvent (hEvent) ;
       ofc_handle_set_app (hAssoc, hApp, hSet) ;
       if (ofc_event_test (hAssoc))
-	BlueWaitSetSignalImpl (hSet, hAssoc) ;
+	ofc_waitset_signal_impl (hSet, hAssoc) ;
 #endif
       break ;
 
@@ -481,7 +481,7 @@ OFC_VOID BlueWaitSetAddImpl (OFC_HANDLE hSet, OFC_HANDLE hApp,
       ofc_handle_set_app (hAssoc, hApp, hSet) ;
       if (ofc_event_test (hAssoc))
 	{
-	  BlueWaitSetSignalImpl (hSet, hAssoc) ;
+	  ofc_waitset_signal_impl (hSet, hAssoc) ;
 	}
       break ;
 
@@ -495,7 +495,7 @@ OFC_VOID BlueWaitSetAddImpl (OFC_HANDLE hSet, OFC_HANDLE hApp,
     }
 }
 
-OFC_VOID BlueWaitSetDebug (OFC_HANDLE handle)
+OFC_VOID ofc_waitset_debug (OFC_HANDLE handle)
 {
   WAIT_SET *pWaitSet ;
 
@@ -511,11 +511,11 @@ OFC_VOID BlueWaitSetDebug (OFC_HANDLE handle)
   if (pWaitSet != OFC_NULL)
     {
       for (hEventHandle = 
-	     (OFC_HANDLE) BlueQfirst (pWaitSet->hHandleQueue) ;
+	     (OFC_HANDLE) ofc_queue_first (pWaitSet->hHandleQueue) ;
 		   hEventHandle != OFC_HANDLE_NULL ;
 	   hEventHandle = 
-	     (OFC_HANDLE) BlueQnext (pWaitSet->hHandleQueue,
-                                 (OFC_VOID *) hEventHandle) )
+	     (OFC_HANDLE) ofc_queue_next (pWaitSet->hHandleQueue,
+                                      (OFC_VOID *) hEventHandle) )
 	{
 	  switch (ofc_handle_get_type(hEventHandle))
 	    {
@@ -536,8 +536,8 @@ OFC_VOID BlueWaitSetDebug (OFC_HANDLE handle)
 
 	    case OFC_HANDLE_WAIT_QUEUE:
 	      ofc_printf ("Wait Queue: %s\n",
-			   BlueWaitQempty(hEventHandle) ? 
-			   "empty" : "not empty") ;
+                      ofc_waitq_empty(hEventHandle) ?
+                      "empty" : "not empty") ;
 	      break ;
 
 	    case OFC_HANDLE_FILE:
@@ -565,10 +565,10 @@ OFC_VOID BlueWaitSetDebug (OFC_HANDLE handle)
 
 	    case OFC_HANDLE_FSSMB_OVERLAPPED:
 	      hWaitQ = OfcFileGetOverlappedWaitQ (hEventHandle) ;
-	      hEvent = BlueWaitQGetEventHandle (hWaitQ) ;
+	      hEvent = ofc_waitq_get_event_handle (hWaitQ) ;
 	      ofc_printf ("CIFS Overlapped: %s\n",
-			   BlueWaitQempty (hWaitQ) ?
-			   "triggered" : "not triggered") ;
+                      ofc_waitq_empty (hWaitQ) ?
+                      "triggered" : "not triggered") ;
 	      break ;
 
 	    case OFC_HANDLE_EVENT:
@@ -579,11 +579,11 @@ OFC_VOID BlueWaitSetDebug (OFC_HANDLE handle)
 
 	    case OFC_HANDLE_TIMER:
 	      ofc_printf ("Timer: %d msec\n",
-                      BlueTimerGetWaitTime (hEventHandle)) ;
+                      ofc_timer_get_wait_time (hEventHandle)) ;
 	      break ;
 	    }
 #if defined(OFC_APP_DEBUG)
-	  BlueAppDump(BlueHandleGetApp (hEventHandle)) ;
+	  ofc_app_dump(ofc_handle_get_app (hEventHandle)) ;
 #endif
 	  
 	}

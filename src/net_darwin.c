@@ -22,8 +22,8 @@
 #include "ofc/net.h"
 
 /**
- * \defgroup BlueNetDarwin Darwin Network Implementation
- * \ingroup BlueDarwin
+ * \defgroup net_darwin Darwin Network Implementation
+ * \ingroup darwin
  */
 
 /** \{ */

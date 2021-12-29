@@ -14,8 +14,8 @@
 #include "ofc/file.h"
 
 /**
- * \defgroup BlueTimeDarwin Darwin Timer Interface
- * \ingroup BlueDarwin
+ * \defgroup time_darwin Darwin Timer Interface
+ * \ingroup darwin
  */
 
 #define _SEC_IN_MINUTE 60L
@@ -30,7 +30,7 @@ static const int _DAYS_BEFORE_MONTH[12] =
 
 #define _DAYS_IN_YEAR(year) (_ISLEAP(year) ? 366 : 365)
 
-static OFC_UINT32 BlueTimeMakeTime (struct tm *tm)
+static OFC_UINT32 ofc_time_make_time (struct tm *tm)
 {
   OFC_UINT32 tim ;
   long days ;
@@ -68,7 +68,7 @@ static OFC_UINT32 BlueTimeMakeTime (struct tm *tm)
   return tim;
 }
 
-static OFC_VOID BlueTimeLocalTime (time_t time, struct tm *tm)
+static OFC_VOID ofc_time_local_time (time_t time, struct tm *tm)
 {
   time_t days_in_year ;
   time_t ticks_in_day ;
@@ -138,7 +138,7 @@ static OFC_VOID BlueTimeLocalTime (time_t time, struct tm *tm)
 }
 
 #undef DEBUG_WRAP
-OFC_MSTIME BlueTimeGetNowImpl(OFC_VOID) 
+OFC_MSTIME ofc_time_get_now_impl(OFC_VOID)
 {
   OFC_MSTIME ms ;
   struct timeval tp ;
@@ -163,7 +163,7 @@ OFC_MSTIME BlueTimeGetNowImpl(OFC_VOID)
   return (ms) ;
 }
 
-OFC_VOID BlueTimeGetFileTimeImpl (OFC_FILETIME *filetime)
+OFC_VOID ofc_time_get_file_time_impl (OFC_FILETIME *filetime)
 {
   struct timespec tp ;
   /*
@@ -173,10 +173,10 @@ OFC_VOID BlueTimeGetFileTimeImpl (OFC_FILETIME *filetime)
   time(&tp.tv_sec) ;
   tp.tv_nsec = 0 ;
 
-  EpochTimeToFileTime (tp.tv_sec, tp.tv_nsec, filetime) ;
+  epoch_time_to_file_time (tp.tv_sec, tp.tv_nsec, filetime) ;
 }
 
-OFC_UINT16 BlueTimeGetTimeZoneImpl (OFC_VOID)
+OFC_UINT16 ofc_time_get_timezone_impl (OFC_VOID)
 {
   struct tm *gm ;
   time_t ts ;
@@ -195,33 +195,33 @@ OFC_UINT16 BlueTimeGetTimeZoneImpl (OFC_VOID)
   return (ret) ;
 }
 
-OFC_BOOL BlueFileTimeToDosDateTimeImpl (const OFC_FILETIME *lpFileTime,
-					 OFC_WORD *lpFatDate,
-					 OFC_WORD *lpFatTime)
+OFC_BOOL ofc_file_time_to_dos_date_time_impl (const OFC_FILETIME *lpFileTime,
+                                              OFC_WORD *lpFatDate,
+                                              OFC_WORD *lpFatTime)
 {
   struct timespec tp ;
   struct tm tm;
 
-  FileTimeToEpochTime (lpFileTime, (OFC_ULONG *) &tp.tv_sec, 
-		       (OFC_ULONG *) &tp.tv_nsec) ;
+  file_time_to_epoch_time (lpFileTime, (OFC_ULONG *) &tp.tv_sec,
+                           (OFC_ULONG *) &tp.tv_nsec) ;
 
-  BlueTimeLocalTime (tp.tv_sec, &tm) ;
+  ofc_time_local_time (tp.tv_sec, &tm) ;
 
-  BlueTimeElementsToDosDateTime (tm.tm_mon + 1,
-				 tm.tm_mday,
+  ofc_time_elements_to_dos_date_time (tm.tm_mon + 1,
+                                      tm.tm_mday,
 				 tm.tm_year + 1900,
-				 tm.tm_hour,
-				 tm.tm_min,
-				 tm.tm_sec,
-				 lpFatDate,
-				 lpFatTime) ;
+                                      tm.tm_hour,
+                                      tm.tm_min,
+                                      tm.tm_sec,
+                                      lpFatDate,
+                                      lpFatTime) ;
 
   return (OFC_TRUE) ;
 }
 
-OFC_BOOL BlueDosDateTimeToFileTimeImpl (OFC_WORD FatDate, 
-					 OFC_WORD FatTime,
-					 OFC_FILETIME *lpFileTime)
+OFC_BOOL ofc_dos_date_time_to_file_time_impl (OFC_WORD FatDate,
+                                              OFC_WORD FatTime,
+                                              OFC_FILETIME *lpFileTime)
 {
   struct timespec tp ;
   struct tm tm;
@@ -233,14 +233,14 @@ OFC_BOOL BlueDosDateTimeToFileTimeImpl (OFC_WORD FatDate,
   OFC_UINT16 min ;
   OFC_UINT16 sec ;
 
-  BlueTimeDosDateTimeToElements (FatDate,
-				 FatTime,
-				 &mon,
-				 &day,
-				 &year,
-				 &hour,
-				 &min,
-				 &sec) ;
+  ofc_dos_date_time_to_elements (FatDate,
+                                 FatTime,
+                                 &mon,
+                                 &day,
+                                 &year,
+                                 &hour,
+                                 &min,
+                                 &sec) ;
   tm.tm_mon = mon - 1 ;
   tm.tm_mday = day ;
   tm.tm_year = year - 1900 ;
@@ -248,15 +248,15 @@ OFC_BOOL BlueDosDateTimeToFileTimeImpl (OFC_WORD FatDate,
   tm.tm_min = min ;
   tm.tm_sec = sec ;
 
-  tp.tv_sec = BlueTimeMakeTime (&tm) ;
+  tp.tv_sec = ofc_time_make_time (&tm) ;
   tp.tv_nsec = 0 ;
 
-  EpochTimeToFileTime (tp.tv_sec, tp.tv_nsec, lpFileTime) ;
+  epoch_time_to_file_time (tp.tv_sec, tp.tv_nsec, lpFileTime) ;
 
   return (OFC_TRUE) ;
 }
 
-OFC_MSTIME BlueTimeGetRuntimeImpl (OFC_VOID)
+OFC_MSTIME ofc_get_runtime_impl (OFC_VOID)
 {
   int ret ;
   struct rusage r_usage ;

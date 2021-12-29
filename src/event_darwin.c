@@ -24,7 +24,7 @@ typedef struct
   pthread_mutex_t pthread_mutex ;
 } DARWIN_EVENT ;
 
-OFC_HANDLE BlueEventCreateImpl (OFC_EVENT_TYPE eventType)
+OFC_HANDLE ofc_event_create_impl (OFC_EVENT_TYPE eventType)
 {
   DARWIN_EVENT *darwin_event ;
   OFC_HANDLE hDarwinEvent ;
@@ -46,7 +46,7 @@ OFC_HANDLE BlueEventCreateImpl (OFC_EVENT_TYPE eventType)
   return (hDarwinEvent) ;
 }
 
-OFC_VOID BlueEventSetImpl (OFC_HANDLE hEvent)
+OFC_VOID ofc_event_set_impl (OFC_HANDLE hEvent)
 {
   DARWIN_EVENT *darwinEvent ;
   OFC_HANDLE hWaitSet ;
@@ -63,14 +63,14 @@ OFC_VOID BlueEventSetImpl (OFC_HANDLE hEvent)
       ofc_handle_unlock (hEvent) ;
       if (hWaitSet != OFC_HANDLE_NULL)
 	{
-	  BlueWaitSetSignalImpl (hWaitSet, hEvent) ;
+	  ofc_waitset_signal_impl (hWaitSet, hEvent) ;
 	}
 
       pthread_mutex_unlock (&darwinEvent->pthread_mutex) ;
     }
 }
 
-OFC_VOID BlueEventResetImpl (OFC_HANDLE hEvent)
+OFC_VOID ofc_event_reset_impl (OFC_HANDLE hEvent)
 {
   DARWIN_EVENT *darwinEvent ;
 
@@ -84,7 +84,7 @@ OFC_VOID BlueEventResetImpl (OFC_HANDLE hEvent)
     }
 }
 
-OFC_EVENT_TYPE BlueEventGetTypeImpl (OFC_HANDLE hEvent)
+OFC_EVENT_TYPE ofc_event_get_type_impl (OFC_HANDLE hEvent)
 {
   DARWIN_EVENT *darwin_event ;
   OFC_EVENT_TYPE eventType ;
@@ -99,7 +99,7 @@ OFC_EVENT_TYPE BlueEventGetTypeImpl (OFC_HANDLE hEvent)
   return (eventType) ;
 }
 
-OFC_VOID BlueEventDestroyImpl (OFC_HANDLE hEvent)
+OFC_VOID ofc_event_destroy_impl (OFC_HANDLE hEvent)
 {
   DARWIN_EVENT *darwinEvent ;
 
@@ -114,7 +114,7 @@ OFC_VOID BlueEventDestroyImpl (OFC_HANDLE hEvent)
     }
 }
 
-OFC_VOID BlueEventWaitImpl (OFC_HANDLE hEvent)
+OFC_VOID ofc_event_wait_impl (OFC_HANDLE hEvent)
 {
   DARWIN_EVENT *darwin_event ;
 
@@ -133,7 +133,7 @@ OFC_VOID BlueEventWaitImpl (OFC_HANDLE hEvent)
     }
 }
   
-OFC_BOOL BlueEventTestImpl (OFC_HANDLE hEvent)
+OFC_BOOL ofc_event_test_impl (OFC_HANDLE hEvent)
 {
   DARWIN_EVENT *darwin_event ;
   OFC_BOOL ret ;

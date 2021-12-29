@@ -19,7 +19,7 @@ static const char *env2str[OFC_ENV_NUM] =
   } ;
 
 OFC_BOOL 
-BlueEnvGetImpl (OFC_ENV_VALUE value, OFC_TCHAR *ptr, OFC_SIZET len) 
+ofc_env_get_impl (OFC_ENV_VALUE value, OFC_TCHAR *ptr, OFC_SIZET len)
 {
   char *env ;
   OFC_BOOL ret ;

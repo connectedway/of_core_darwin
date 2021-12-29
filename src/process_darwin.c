@@ -26,15 +26,15 @@
 
 extern char **environ ;
 
-BLUE_PROCESS_ID BlueProcessGetImpl (OFC_VOID)
+OFC_PROCESS_ID ofc_process_get_impl (OFC_VOID)
 {
   pid_t pid ;
 
   pid = getpid() ;
-  return ((BLUE_PROCESS_ID) pid) ;
+  return ((OFC_PROCESS_ID) pid) ;
 }
 
-OFC_VOID BlueProcessBlockSignal (OFC_INT signal)
+OFC_VOID ofc_process_block_signal (OFC_INT signal)
 {
   sigset_t new_set ;
   sigset_t old_set ;
@@ -46,7 +46,7 @@ OFC_VOID BlueProcessBlockSignal (OFC_INT signal)
 
 }
 
-OFC_VOID BlueProcessUnblockSignal (OFC_INT signal)
+OFC_VOID ofc_process_unblock_signal (OFC_INT signal)
 {
   sigset_t new_set ;
 
@@ -57,7 +57,7 @@ OFC_VOID BlueProcessUnblockSignal (OFC_INT signal)
 }
 
 OFC_BOOL 
-BlueProcessTermTrapImpl (BLUE_PROCESS_TRAP_HANDLER trap)
+ofc_process_term_trap_impl (OFC_PROCESS_TRAP_HANDLER trap)
 {
   struct sigaction action ;
   OFC_BOOL ret ;
@@ -73,10 +73,10 @@ BlueProcessTermTrapImpl (BLUE_PROCESS_TRAP_HANDLER trap)
   return (ret) ;
 }
 
-OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
-                                OFC_TCHAR *uname,
-                                OFC_INT argc,
-                                OFC_CHAR **argv)
+OFC_HANDLE ofc_process_exec_impl (OFC_CTCHAR *name,
+                                  OFC_TCHAR *uname,
+                                  OFC_INT argc,
+                                  OFC_CHAR **argv)
 {
   OFC_HANDLE hProcess ;
   OFC_CHAR *cname ;
@@ -100,7 +100,7 @@ OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
   pid = vfork () ;
   if (pid < 0)
     {
-      BlueProcessCrash ("Unable to Fork First Process\n") ;
+      ofc_process_crash ("Unable to Fork First Process\n") ;
     }
   else if (pid == 0)
     {
@@ -111,7 +111,7 @@ OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
       pid2 = fork() ;
       if (pid2 < 0)
 	{
-	  BlueProcessCrash ("Unable to Fork Second Process\n") ;
+	  ofc_process_crash ("Unable to Fork Second Process\n") ;
 	}
       else if (pid2 == 0)
 	{
@@ -129,7 +129,7 @@ OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
 	  /* We are the Daemon.  Exec the daemon */
 	  ret3 = execve (cname, exec_argv, environ) ;
 	  if (ret3 < 0)
-	    BlueProcessCrash ("Unable to Exec the Daemon\n") ;
+	    ofc_process_crash ("Unable to Exec the Daemon\n") ;
 	  /*
 	   * Although we exit with a return code, we are detached, so 
 	   * no one is looking for it.  Not only that, but if execve was
@@ -166,7 +166,7 @@ OFC_HANDLE BlueProcessExecImpl (OFC_CTCHAR *name,
   return (hProcess) ;
 }
 
-BLUE_PROCESS_ID BlueProcessGetIdImpl (OFC_HANDLE hProcess)
+OFC_PROCESS_ID ofc_process_get_id_impl (OFC_HANDLE hProcess)
 {
   pid_t pid ;
 
@@ -174,10 +174,10 @@ BLUE_PROCESS_ID BlueProcessGetIdImpl (OFC_HANDLE hProcess)
   if (pid != (pid_t) 0)
     ofc_handle_unlock (hProcess) ;
 
-  return ((BLUE_PROCESS_ID) pid) ;
+  return ((OFC_PROCESS_ID) pid) ;
 }
   
-OFC_VOID BlueProcessTermImpl (OFC_HANDLE hProcess)
+OFC_VOID ofc_process_term_impl (OFC_HANDLE hProcess)
 {
   pid_t pid ;
 
@@ -189,18 +189,18 @@ OFC_VOID BlueProcessTermImpl (OFC_HANDLE hProcess)
   ofc_handle_unlock (hProcess) ;
 }
 
-OFC_VOID BlueProcessKillImpl (BLUE_PROCESS_ID pid)
+OFC_VOID ofc_process_kill_impl (OFC_PROCESS_ID pid)
 {
   kill (pid, SIGTERM) ;
 }
 
-OFC_VOID BlueProcessSetPriority (BLUE_PROCESS_PRIORITY prio) 
+OFC_VOID ofc_process_set_priority (OFC_PROCESS_PRIORITY prio)
 {
 }
 
 OFC_VOID
-BlueProcessCrashImpl (OFC_CCHAR *obuf)
+ofc_process_crash_impl (OFC_CCHAR *obuf)
 {
-  BlueWriteConsoleImpl (obuf) ;
+  ofc_write_console_impl (obuf) ;
   _Exit(EX_SOFTWARE) ;
 }  

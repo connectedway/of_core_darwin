@@ -15,27 +15,27 @@ typedef struct
   OFC_UINT32 thread ;
   pthread_mutexattr_t mutex_attr ;
   pthread_mutex_t mutex_lock ;
-} BLUE_LOCK_IMPL ;
+} OFC_LOCK_IMPL ;
 
-OFC_VOID BlueLockDestroyImpl (BLUE_LOCK_IMPL *lock)
+OFC_VOID ofc_lock_destroy_impl (OFC_LOCK_IMPL *lock)
 {
   pthread_mutex_destroy (&lock->mutex_lock) ;
   pthread_mutexattr_destroy (&lock->mutex_attr) ;
   ofc_free(lock);
 }
 
-OFC_VOID *BlueLockInitImpl (OFC_VOID)
+OFC_VOID *ofc_lock_init_impl (OFC_VOID)
 {
-  BLUE_LOCK_IMPL *lock;
+  OFC_LOCK_IMPL *lock;
 
-  lock = ofc_malloc(sizeof(BLUE_LOCK_IMPL));
+  lock = ofc_malloc(sizeof(OFC_LOCK_IMPL));
   pthread_mutexattr_init (&lock->mutex_attr) ;
   pthread_mutexattr_settype (&lock->mutex_attr, PTHREAD_MUTEX_RECURSIVE) ;
   pthread_mutex_init (&lock->mutex_lock, &lock->mutex_attr) ;
   return (lock);
 }
 
-OFC_BOOL BlueLockTryImpl (BLUE_LOCK_IMPL *lock)
+OFC_BOOL ofc_lock_try_impl (OFC_LOCK_IMPL *lock)
 {
   OFC_BOOL ret ;
   
@@ -46,12 +46,12 @@ OFC_BOOL BlueLockTryImpl (BLUE_LOCK_IMPL *lock)
   return (ret) ;
 }
 
-OFC_VOID BlueLockImpl (BLUE_LOCK_IMPL *lock)
+OFC_VOID ofc_lock_impl (OFC_LOCK_IMPL *lock)
 {
   pthread_mutex_lock (&lock->mutex_lock) ;
 }
 
-OFC_VOID BlueUnlockImpl (BLUE_LOCK_IMPL *lock)
+OFC_VOID ofc_unlock_impl (OFC_LOCK_IMPL *lock)
 {
   pthread_mutex_unlock (&lock->mutex_lock) ;
 }

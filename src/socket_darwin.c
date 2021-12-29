@@ -49,13 +49,13 @@ typedef struct
   OFC_UINT16 events ;
   OFC_UINT16 revents ;
   OFC_IPADDR ip ;
-} BLUE_SOCKET_IMPL ;
+} OFC_SOCKET_IMPL ;
 
-OFC_HANDLE BlueSocketImplCreate (OFC_FAMILY_TYPE family,
-                                 BLUE_SOCKET_TYPE socktype)
+OFC_HANDLE ofc_socket_impl_create (OFC_FAMILY_TYPE family,
+                                   OFC_SOCKET_TYPE socktype)
 {
   OFC_HANDLE hSocket ;
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
 
   int stype ;
   int fam ;
@@ -63,7 +63,7 @@ OFC_HANDLE BlueSocketImplCreate (OFC_FAMILY_TYPE family,
   int on ;
   
   hSocket = OFC_HANDLE_NULL ;
-  sock = ofc_malloc (sizeof (BLUE_SOCKET_IMPL)) ;
+  sock = ofc_malloc (sizeof (OFC_SOCKET_IMPL)) ;
 
   if (sock != OFC_NULL)
     {
@@ -128,9 +128,9 @@ OFC_HANDLE BlueSocketImplCreate (OFC_FAMILY_TYPE family,
   return (hSocket) ;
 }
 
-OFC_VOID BlueSocketImplDestroy (OFC_HANDLE hSocket)
+OFC_VOID ofc_socket_impl_destroy (OFC_HANDLE hSocket)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
 
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
@@ -154,7 +154,7 @@ OFC_VOID BlueSocketImplDestroy (OFC_HANDLE hSocket)
  * Returns:
  *    status (STATE_SUCCESS or STATE_FAIL)
  */
-static OFC_VOID BlueMakeSockaddr (struct sockaddr **mysockaddr,
+static OFC_VOID make_sockaddr (struct sockaddr **mysockaddr,
 				   socklen_t *mysocklen,
 				   const OFC_IPADDR *ip,
 				   OFC_UINT16 port)
@@ -193,7 +193,7 @@ static OFC_VOID BlueMakeSockaddr (struct sockaddr **mysockaddr,
     }
 }
 
-OFC_VOID BlueUnmakeSockaddr  (struct sockaddr *mysockaddr,
+OFC_VOID unmake_sockaddr  (struct sockaddr *mysockaddr,
                               OFC_IPADDR *ip,
                               OFC_UINT16 *port)
 {
@@ -223,10 +223,10 @@ OFC_VOID BlueUnmakeSockaddr  (struct sockaddr *mysockaddr,
     }
 }
 
-OFC_BOOL BlueSocketImplBind (OFC_HANDLE hSocket, const OFC_IPADDR *ip,
-                             OFC_UINT16 port)
+OFC_BOOL ofc_socket_impl_bind (OFC_HANDLE hSocket, const OFC_IPADDR *ip,
+                               OFC_UINT16 port)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
 
   int status ;
@@ -238,7 +238,7 @@ OFC_BOOL BlueSocketImplBind (OFC_HANDLE hSocket, const OFC_IPADDR *ip,
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
     {
-      BlueMakeSockaddr (&mysockaddr, &mysocklen, ip, port) ;
+      make_sockaddr (&mysockaddr, &mysocklen, ip, port) ;
 
       status = bind(sock->socket, mysockaddr, mysocklen) ;
 
@@ -300,9 +300,9 @@ OFC_BOOL BlueSocketImplBind (OFC_HANDLE hSocket, const OFC_IPADDR *ip,
  * Returns:
  *    status (STATE_SUCCESS or STATE_FAIL)
  */
-OFC_BOOL BlueSocketImplClose (OFC_HANDLE hSocket)
+OFC_BOOL ofc_socket_impl_close (OFC_HANDLE hSocket)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
 
   ret = OFC_FALSE ;
@@ -329,10 +329,10 @@ OFC_BOOL BlueSocketImplClose (OFC_HANDLE hSocket)
  * Returns:
  *    status (STATE_SUCCESS or STATE_FAIL)
  */
-OFC_BOOL BlueSocketImplConnect (OFC_HANDLE hSocket,
-                                const OFC_IPADDR *ip, OFC_UINT16 port)
+OFC_BOOL ofc_socket_impl_connect (OFC_HANDLE hSocket,
+                                  const OFC_IPADDR *ip, OFC_UINT16 port)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
 
   int status ;
@@ -346,7 +346,7 @@ OFC_BOOL BlueSocketImplConnect (OFC_HANDLE hSocket,
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
     {
-      BlueMakeSockaddr (&mysockaddr, &mysocklen, ip, port) ;
+      make_sockaddr (&mysockaddr, &mysocklen, ip, port) ;
 
       status = connect(sock->socket, mysockaddr, mysocklen) ;
 
@@ -359,7 +359,7 @@ OFC_BOOL BlueSocketImplConnect (OFC_HANDLE hSocket,
 	    struct sockaddr_in *sockaddrp ;
 	    sockaddrp = (struct sockaddr_in *) mysockaddr ;
 
-	    BlueCprintf ("connect error: %s %s(%d), errno %d\n",
+	    ofc_printf ("connect error: %s %s(%d), errno %d\n",
 			 "AF_INET",
 			 inet_ntop (AF_INET, &sockaddrp->sin_addr,
 				    ip_str, IP6STR_LEN),
@@ -386,9 +386,9 @@ OFC_BOOL BlueSocketImplConnect (OFC_HANDLE hSocket,
  * Returns:
  *    status (STATE_SUCCESS or STATE_FAIL)
  */
-OFC_BOOL BlueSocketImplListen (OFC_HANDLE hSocket, OFC_INT backlog)
+OFC_BOOL ofc_socket_impl_listen (OFC_HANDLE hSocket, OFC_INT backlog)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
   int status ;
 
@@ -414,11 +414,11 @@ OFC_BOOL BlueSocketImplListen (OFC_HANDLE hSocket, OFC_INT backlog)
  * Returns:
  *    status (STATE_SUCCESS or STATE_FAIL)
  */
-OFC_HANDLE BlueSocketImplAccept (OFC_HANDLE hSocket,
-                                 OFC_IPADDR *ip, OFC_UINT16 *port)
+OFC_HANDLE ofc_socket_impl_accept (OFC_HANDLE hSocket,
+                                   OFC_IPADDR *ip, OFC_UINT16 *port)
 {
-  BLUE_SOCKET_IMPL *sock ;
-  BLUE_SOCKET_IMPL *newsock ;
+  OFC_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *newsock ;
   OFC_HANDLE hNewSock ;
 
   socklen_t addrlen;
@@ -428,7 +428,7 @@ OFC_HANDLE BlueSocketImplAccept (OFC_HANDLE hSocket,
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
     {
-      newsock = ofc_malloc (sizeof (BLUE_SOCKET_IMPL)) ;
+      newsock = ofc_malloc (sizeof (OFC_SOCKET_IMPL)) ;
 
       addrlen = (OFC_MAX (sizeof (struct sockaddr_in6),
 			     sizeof (struct sockaddr_in))) ;
@@ -443,7 +443,7 @@ OFC_HANDLE BlueSocketImplAccept (OFC_HANDLE hSocket,
 	  on = OFC_TRUE ;
 	  setsockopt (sock->socket, SOL_SOCKET, SO_NOSIGPIPE,
 		      (char *) &on, sizeof(on)) ;
-	  BlueUnmakeSockaddr (mysockaddr, ip, port) ;
+	  unmake_sockaddr (mysockaddr, ip, port) ;
 	  hNewSock = ofc_handle_create (OFC_HANDLE_SOCKET_IMPL, newsock) ;
 	}
       else
@@ -462,9 +462,9 @@ OFC_HANDLE BlueSocketImplAccept (OFC_HANDLE hSocket,
  *    hSock - Socket to set the port reuseable on
  *    onoff - TRUE for on, FALSE for off
  */
-OFC_BOOL BlueSocketImplReuseAddr (OFC_HANDLE hSocket, OFC_BOOL onoff)
+OFC_BOOL ofc_socket_impl_reuse_addr (OFC_HANDLE hSocket, OFC_BOOL onoff)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
 
   int status ;
@@ -493,9 +493,9 @@ OFC_BOOL BlueSocketImplReuseAddr (OFC_HANDLE hSocket, OFC_BOOL onoff)
  * Returns:
  *   True if connected, false otherwise
  */
-OFC_BOOL BlueSocketImplConnected (OFC_HANDLE hSocket)
+OFC_BOOL ofc_socket_impl_connected (OFC_HANDLE hSocket)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
 
   int status ;
@@ -527,9 +527,9 @@ OFC_BOOL BlueSocketImplConnected (OFC_HANDLE hSocket)
  * Returns:
  *    status - Success of failure
  */
-OFC_BOOL BlueSocketImplNoBlock (OFC_HANDLE hSocket, OFC_BOOL onoff)
+OFC_BOOL ofc_socket_impl_no_block (OFC_HANDLE hSocket, OFC_BOOL onoff)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
 
   int flags ;
@@ -560,10 +560,10 @@ OFC_BOOL BlueSocketImplNoBlock (OFC_HANDLE hSocket, OFC_BOOL onoff)
  * Returns:
  *    Number of bytes written
  */
-OFC_SIZET BlueSocketImplSend (OFC_HANDLE hSocket, const OFC_VOID *buf,
-                              OFC_SIZET len)
+OFC_SIZET ofc_socket_impl_send (OFC_HANDLE hSocket, const OFC_VOID *buf,
+                                OFC_SIZET len)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_SIZET ret ;
 
   OFC_SIZET status ;
@@ -595,12 +595,12 @@ OFC_SIZET BlueSocketImplSend (OFC_HANDLE hSocket, const OFC_VOID *buf,
  * Returns:
  *    Number of bytes written
  */
-OFC_SIZET BlueSocketImplSendTo (OFC_HANDLE hSocket, const OFC_VOID *buf,
-                                OFC_SIZET len,
-                                const OFC_IPADDR *ip,
-                                OFC_UINT16 port)
+OFC_SIZET ofc_socket_impl_sendto (OFC_HANDLE hSocket, const OFC_VOID *buf,
+                                  OFC_SIZET len,
+                                  const OFC_IPADDR *ip,
+                                  OFC_UINT16 port)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_SIZET ret ;
 
   OFC_SIZET status ;
@@ -611,7 +611,7 @@ OFC_SIZET BlueSocketImplSendTo (OFC_HANDLE hSocket, const OFC_VOID *buf,
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
     {
-      BlueMakeSockaddr (&mysockaddr, &mysocklen, ip, port) ;
+      make_sockaddr (&mysockaddr, &mysocklen, ip, port) ;
 
       status = sendto(sock->socket, (const char * ) buf, (int) len, 0,
 		      mysockaddr, mysocklen);
@@ -630,7 +630,7 @@ OFC_SIZET BlueSocketImplSendTo (OFC_HANDLE hSocket, const OFC_VOID *buf,
 
 	  strerror_r (errno, errstr, 80) ;
 	  ofc_printf ("Sendto Error: %.80s\n", errstr) ;
-	  BlueSocketImplGetAddresses (hSocket, &local, &remote) ;
+	  ofc_socket_impl_get_addresses (hSocket, &local, &remote) ;
 
 	  ofc_ntop (&local.sin_addr, local_ip, IP6STR_LEN) ;
 	  ofc_ntop (ip, remote_ip, IP6STR_LEN) ;
@@ -660,11 +660,11 @@ OFC_SIZET BlueSocketImplSendTo (OFC_HANDLE hSocket, const OFC_VOID *buf,
  * Returns:
  *    number of bytes read
  */
-OFC_SIZET BlueSocketImplRecv (OFC_HANDLE hSocket,
-                              OFC_VOID *buf,
-                              OFC_SIZET len)
+OFC_SIZET ofc_socket_impl_recv (OFC_HANDLE hSocket,
+                                OFC_VOID *buf,
+                                OFC_SIZET len)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_SIZET ret ;
 
   OFC_SIZET status ;
@@ -700,13 +700,13 @@ OFC_SIZET BlueSocketImplRecv (OFC_HANDLE hSocket,
  * Returns:
  *    number of bytes read
  */
-OFC_SIZET BlueSocketImplRecvFrom (OFC_HANDLE hSocket,
-                                  OFC_VOID *buf,
-                                  OFC_SIZET len,
-                                  OFC_IPADDR *ip,
-                                  OFC_UINT16 *port)
+OFC_SIZET ofc_socket_impl_recv_from (OFC_HANDLE hSocket,
+                                     OFC_VOID *buf,
+                                     OFC_SIZET len,
+                                     OFC_IPADDR *ip,
+                                     OFC_UINT16 *port)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_SIZET ret ;
 
   struct sockaddr *mysockaddr;
@@ -730,7 +730,7 @@ OFC_SIZET BlueSocketImplRecvFrom (OFC_HANDLE hSocket,
 	ret = 0 ;
       else if (status >= 0)
 	{
-	  BlueUnmakeSockaddr (mysockaddr, ip, port) ;
+	  unmake_sockaddr (mysockaddr, ip, port) ;
 	  ret = status ;
 	}
       ofc_free (mysockaddr) ;
@@ -739,10 +739,10 @@ OFC_SIZET BlueSocketImplRecvFrom (OFC_HANDLE hSocket,
   return(ret) ;
 }
 
-OFC_VOID BlueSocketImplSetEvent (OFC_HANDLE hSocket,
-                                 OFC_UINT16 revents)
+OFC_VOID ofc_socket_impl_set_event (OFC_HANDLE hSocket,
+                                    OFC_UINT16 revents)
 {
-  BLUE_SOCKET_IMPL *pSocket ;
+  OFC_SOCKET_IMPL *pSocket ;
 
   pSocket = ofc_handle_lock (hSocket) ;
   if (pSocket != OFC_NULL)
@@ -752,9 +752,9 @@ OFC_VOID BlueSocketImplSetEvent (OFC_HANDLE hSocket,
     }
 }
 
-OFC_UINT16 BlueSocketImplGetEvent (OFC_HANDLE hSocket)
+OFC_UINT16 ofc_socket_impl_get_event (OFC_HANDLE hSocket)
 {
-  BLUE_SOCKET_IMPL *pSocket ;
+  OFC_SOCKET_IMPL *pSocket ;
   OFC_UINT16 ret ;
 
   pSocket = ofc_handle_lock (hSocket) ;
@@ -767,9 +767,9 @@ OFC_UINT16 BlueSocketImplGetEvent (OFC_HANDLE hSocket)
   return (ret) ;
 }
 
-int BlueSocketImplGetFD (OFC_HANDLE hSocket)
+int ofc_socket_impl_get_fd (OFC_HANDLE hSocket)
 {
-  BLUE_SOCKET_IMPL *pSocket ;
+  OFC_SOCKET_IMPL *pSocket ;
   int fd ;
 
   fd = -1 ;
@@ -783,10 +783,10 @@ int BlueSocketImplGetFD (OFC_HANDLE hSocket)
   return (fd) ;
 }
 
-BLUE_SOCKET_EVENT_TYPE BlueSocketImplTest (OFC_HANDLE hSocket)
+OFC_SOCKET_EVENT_TYPE ofc_socket_impl_test (OFC_HANDLE hSocket)
 {
-  BLUE_SOCKET_IMPL *pSocket ;
-  BLUE_SOCKET_EVENT_TYPE EventTest ;
+  OFC_SOCKET_IMPL *pSocket ;
+  OFC_SOCKET_EVENT_TYPE EventTest ;
 
   EventTest = 0 ;
 
@@ -795,17 +795,17 @@ BLUE_SOCKET_EVENT_TYPE BlueSocketImplTest (OFC_HANDLE hSocket)
     {
 
       if (pSocket->revents & POLLHUP)
-	EventTest |= BLUE_SOCKET_EVENT_CLOSE ;
+	EventTest |= OFC_SOCKET_EVENT_CLOSE ;
       if (pSocket->revents & POLLIN)
-	EventTest |= (BLUE_SOCKET_EVENT_ACCEPT | BLUE_SOCKET_EVENT_READ);
+	EventTest |= (OFC_SOCKET_EVENT_ACCEPT | OFC_SOCKET_EVENT_READ);
       if (pSocket->revents & POLLERR)
-	EventTest |= BLUE_SOCKET_EVENT_ADDRESSCHANGE ;
+	EventTest |= OFC_SOCKET_EVENT_ADDRESSCHANGE ;
       if (pSocket->revents & POLLPRI)
-	EventTest |= BLUE_SOCKET_EVENT_QOS ;
+	EventTest |= OFC_SOCKET_EVENT_QOS ;
       if (pSocket->revents & (POLLRDBAND | POLLWRBAND))
-	EventTest |= BLUE_SOCKET_EVENT_QOB ;
+	EventTest |= OFC_SOCKET_EVENT_QOB ;
       if (pSocket->revents & POLLOUT)
-	EventTest |= BLUE_SOCKET_EVENT_WRITE ;
+	EventTest |= OFC_SOCKET_EVENT_WRITE ;
 
       ofc_handle_unlock (hSocket) ;
     }
@@ -813,10 +813,10 @@ BLUE_SOCKET_EVENT_TYPE BlueSocketImplTest (OFC_HANDLE hSocket)
   return (EventTest) ;
 }
 
-OFC_BOOL BlueSocketImplEnable (OFC_HANDLE hSocket,
-                               BLUE_SOCKET_EVENT_TYPE type)
+OFC_BOOL ofc_socket_impl_enable (OFC_HANDLE hSocket,
+                                 OFC_SOCKET_EVENT_TYPE type)
 {
-  BLUE_SOCKET_IMPL *pSocket ;
+  OFC_SOCKET_IMPL *pSocket ;
   OFC_INT EventTest ;
   OFC_BOOL ret ;
 
@@ -826,19 +826,19 @@ OFC_BOOL BlueSocketImplEnable (OFC_HANDLE hSocket,
     {
       EventTest = 0 ;
 
-      if (type & BLUE_SOCKET_EVENT_CLOSE)
+      if (type & OFC_SOCKET_EVENT_CLOSE)
 	EventTest |= POLLHUP ;
-      if (type & BLUE_SOCKET_EVENT_ACCEPT)
+      if (type & OFC_SOCKET_EVENT_ACCEPT)
 	EventTest |= POLLIN ;
-      if (type & BLUE_SOCKET_EVENT_ADDRESSCHANGE)
+      if (type & OFC_SOCKET_EVENT_ADDRESSCHANGE)
 	EventTest |= POLLERR ;
-      if (type & BLUE_SOCKET_EVENT_QOS)
+      if (type & OFC_SOCKET_EVENT_QOS)
 	EventTest |= POLLPRI ;
-      if (type & BLUE_SOCKET_EVENT_QOB)
+      if (type & OFC_SOCKET_EVENT_QOB)
 	EventTest |= (POLLRDBAND | POLLWRBAND) ;
-      if (type & BLUE_SOCKET_EVENT_READ)
+      if (type & OFC_SOCKET_EVENT_READ)
 	EventTest |= POLLIN ;
-      if (type & BLUE_SOCKET_EVENT_WRITE)
+      if (type & OFC_SOCKET_EVENT_WRITE)
 	EventTest |= POLLOUT ;
 
       pSocket->events = EventTest ;
@@ -849,9 +849,9 @@ OFC_BOOL BlueSocketImplEnable (OFC_HANDLE hSocket,
   return (ret) ;
 }
 
-OFC_VOID BlueSocketImplSetSendSize (OFC_HANDLE hSocket, OFC_INT size)
+OFC_VOID ofc_socket_impl_set_send_size (OFC_HANDLE hSocket, OFC_INT size)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
 
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
@@ -862,9 +862,9 @@ OFC_VOID BlueSocketImplSetSendSize (OFC_HANDLE hSocket, OFC_INT size)
     }
 }
   
-OFC_VOID BlueSocketImplSetRecvSize (OFC_HANDLE hSocket, OFC_INT size)
+OFC_VOID ofc_socket_impl_set_recv_size (OFC_HANDLE hSocket, OFC_INT size)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
 
   sock = ofc_handle_lock (hSocket) ;
   if (sock != OFC_NULL)
@@ -875,11 +875,11 @@ OFC_VOID BlueSocketImplSetRecvSize (OFC_HANDLE hSocket, OFC_INT size)
     }
 }
   
-OFC_BOOL BlueSocketImplGetAddresses (OFC_HANDLE hSock,
-                                     OFC_SOCKADDR *local,
-                                     OFC_SOCKADDR *remote)
+OFC_BOOL ofc_socket_impl_get_addresses (OFC_HANDLE hSock,
+                                        OFC_SOCKADDR *local,
+                                        OFC_SOCKADDR *remote)
 {
-  BLUE_SOCKET_IMPL *sock ;
+  OFC_SOCKET_IMPL *sock ;
   OFC_BOOL ret ;
   int darwin_status ;
   struct sockaddr *local_sockaddr;
@@ -902,7 +902,7 @@ OFC_BOOL BlueSocketImplGetAddresses (OFC_HANDLE hSock,
 	    local->sin_family = OFC_FAMILY_IP ;
 	  else
 	    local->sin_family = OFC_FAMILY_IPV6 ;
-	  BlueUnmakeSockaddr (local_sockaddr, 
+	  unmake_sockaddr (local_sockaddr, 
 			      &local->sin_addr, &local->sin_port) ;
 
 	  remote_sockaddr_size = (OFC_MAX (sizeof (struct sockaddr_in6),
@@ -918,7 +918,7 @@ OFC_BOOL BlueSocketImplGetAddresses (OFC_HANDLE hSock,
 		remote->sin_family = OFC_FAMILY_IP ;
 	      else
 		remote->sin_family = OFC_FAMILY_IPV6 ;
-	      BlueUnmakeSockaddr (remote_sockaddr, &remote->sin_addr, 
+	      unmake_sockaddr (remote_sockaddr, &remote->sin_addr, 
 				  &remote->sin_port) ;
 	      ret = OFC_TRUE ;
 	    }

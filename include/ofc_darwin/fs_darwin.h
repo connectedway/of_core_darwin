@@ -12,8 +12,8 @@
 #define OFC_FS_DARWIN_BLOCK_SIZE 512
 
 /**
- * \defgroup BlueFSDarwin Darwin File System Dependent Support
- * \ingroup BlueFS
+ * \defgroup fs_darwin Darwin File System Dependent Support
+ * \ingroup fs
  */
 
 /** \{ */
