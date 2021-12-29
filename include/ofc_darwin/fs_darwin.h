@@ -22,13 +22,20 @@
 extern "C"
 {
 #endif
-  OFC_VOID OfcFSDarwinDestroyOverlapped (OFC_HANDLE hOverlapped) ;
-  OFC_VOID 
-  OfcFSDarwinSetOverlappedOffset (OFC_HANDLE hOverlapped, OFC_OFFT offset) ;
-  OFC_VOID OfcFSDarwinStartup (OFC_VOID) ;
-  OFC_VOID OfcFSDarwinShutdown (OFC_VOID);
-  int OfcFSDarwinGetFD (OFC_HANDLE) ;
-  OFC_HANDLE OfcFSDarwinGetOverlappedEvent (OFC_HANDLE hOverlapped) ;
+
+OFC_VOID OfcFSDarwinDestroyOverlapped(OFC_HANDLE hOverlapped);
+
+OFC_VOID
+OfcFSDarwinSetOverlappedOffset(OFC_HANDLE hOverlapped, OFC_OFFT offset);
+
+OFC_VOID OfcFSDarwinStartup(OFC_VOID);
+
+OFC_VOID OfcFSDarwinShutdown(OFC_VOID);
+
+int OfcFSDarwinGetFD(OFC_HANDLE);
+
+OFC_HANDLE OfcFSDarwinGetOverlappedEvent(OFC_HANDLE hOverlapped);
+
 #if defined(__cplusplus)
 }
 #endif
