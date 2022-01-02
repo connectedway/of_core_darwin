@@ -25,6 +25,7 @@
 #include "ofc/socket.h"
 #include "ofc/impl/socketimpl.h"
 #include "ofc/net.h"
+#include "ofc/net_internal.h"
 
 #include "ofc/heap.h"
 

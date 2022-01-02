@@ -20,6 +20,7 @@
 #include "ofc/libc.h"
 #include "ofc/heap.h"
 #include "ofc/net.h"
+#include "ofc/net_internal.h"
 
 /**
  * \defgroup net_darwin Darwin Network Implementation
