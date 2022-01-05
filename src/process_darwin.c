@@ -92,7 +92,7 @@ OFC_HANDLE ofc_process_exec_impl(OFC_CTCHAR *name,
 
     hProcess = OFC_INVALID_HANDLE_VALUE;
 
-    pid = vfork();
+    pid = fork();
     if (pid < 0) {
         ofc_process_crash("Unable to Fork First Process\n");
     } else if (pid == 0) {
