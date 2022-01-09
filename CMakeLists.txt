@@ -22,8 +22,6 @@ set(SRCS
         src/waitset_darwin.c
         )
 
-add_library(of_core_darwin STATIC ${SRCS})
-
-set_target_properties(of_core_darwin PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(of_core_darwin PROPERTIES SOVERSION 1)
+add_library(of_core_darwin OBJECT ${SRCS})
+set_property(TARGET of_core_darwin PROPERTY POSITION_INDEPENDENT_CODE ON)
 
