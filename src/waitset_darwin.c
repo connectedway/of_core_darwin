@@ -312,7 +312,8 @@ OFC_HANDLE ofc_waitset_wait_impl(OFC_HANDLE handle) {
 
         ofc_handle_unlock(handle);
 
-        if (triggered_event == OFC_HANDLE_NULL) {
+        if (triggered_event == OFC_HANDLE_NULL)
+	  {
             poll_count = poll(darwin_handle_list, wait_count, leastWait);
             if (poll_count == 0 && timer_event != OFC_HANDLE_NULL)
                 triggered_event = timer_event;
