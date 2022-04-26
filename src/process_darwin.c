@@ -182,3 +182,14 @@ ofc_process_crash_impl(OFC_CCHAR *obuf) {
     ofc_write_console_impl(obuf);
     _Exit(EX_SOFTWARE);
 }  
+
+OFC_VOID
+ofc_process_dump_libs_impl(OFC_VOID)
+{
+}
+
+OFC_VOID *ofc_process_relative_addr_impl(OFC_VOID *addr)
+{
+  return (OFC_NULL);
+}
+
