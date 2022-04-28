@@ -190,6 +190,6 @@ ofc_process_dump_libs_impl(OFC_VOID)
 
 OFC_VOID *ofc_process_relative_addr_impl(OFC_VOID *addr)
 {
-  return (OFC_NULL);
+  return (addr);
 }
 
