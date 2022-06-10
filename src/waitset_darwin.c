@@ -113,7 +113,7 @@ OFC_HANDLE PollEvent(OFC_INT fd, OFC_HANDLE eventQueue) {
                 if (eventElement != OFC_NULL) {
                     if (ofc_event_test(hEvent) == OFC_TRUE) {
                         if (ofc_event_get_type(hEvent) == OFC_EVENT_AUTO)
-                            ofc_event_reset(hEvent);
+                          ofc_event_reset(hEvent);
                         triggered_event = eventElement->hAssoc;
                     }
                 }
