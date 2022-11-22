@@ -13,6 +13,7 @@ set(SRCS
         src/console_darwin.c
         src/env_darwin.c
         src/event_darwin.c
+        src/iovec_darwin.c
         src/lock_darwin.c
         src/net_darwin.c
         src/process_darwin.c
