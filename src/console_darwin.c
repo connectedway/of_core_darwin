@@ -42,6 +42,12 @@ OFC_VOID ofc_write_stdout_impl(OFC_CCHAR *obuf, OFC_SIZET len) {
     fsync(g_fd);
 }
 
+OFC_VOID ofc_write_log_impl(OFC_LOG_LEVEL level,
+			    OFC_CCHAR *obuf, OFC_SIZET len)
+{
+  ofc_write_stdout_impl(obuf, len);
+}
+
 OFC_VOID ofc_write_console_impl(OFC_CCHAR *obuf) {
     if (g_fd == -1)
         open_log();

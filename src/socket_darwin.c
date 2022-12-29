@@ -96,10 +96,11 @@ OFC_HANDLE ofc_socket_impl_create(OFC_FAMILY_TYPE family,
 
         sock->socket = socket(fam, stype, proto);
 
-        if (sock->socket < 0) {
-            ofc_printf("socket error: %s, errno %d\n",
-                       fam == AF_INET ? "AF_INET" : "AF_INET6",
-                       errno);
+        if (sock->socket < 0)
+	  {
+	    ofc_log(OFC_LOG_WARN, "socket error: %s, errno %d\n",
+		    fam == AF_INET ? "AF_INET" : "AF_INET6",
+		    errno);
             ofc_free(sock);
         } else {
             on = OFC_TRUE;
@@ -223,33 +224,34 @@ OFC_BOOL ofc_socket_impl_bind(OFC_HANDLE hSocket, const OFC_IPADDR *ip,
             OFC_CHAR ip_str[IP6STR_LEN];
             OFC_CHAR errstr[80];
             strerror_r(errno, errstr, 80);
-            ofc_printf("Bind Error: %.80s\n", errstr);
+            ofc_log(OFC_LOG_WARN, "Bind Error: %.80s\n", errstr);
             if (mysockaddr->sa_family == AF_INET) {
                 struct sockaddr_in *mysockaddr_in;
                 mysockaddr_in = (struct sockaddr_in *) mysockaddr;
                 inet_ntop(AF_INET, &mysockaddr_in->sin_addr,
                           ip_str, IP6STR_LEN);
-                ofc_printf("  family: %d\n"
-                           "  port: %d\n"
-                           "  addr: %s\n",
-                           mysockaddr_in->sin_family,
-                           ntohs(mysockaddr_in->sin_port),
-                           ip_str);
+                ofc_log(OFC_LOG_WARN,
+			"  family: %d\n"
+			"  port: %d\n"
+			"  addr: %s\n",
+			mysockaddr_in->sin_family,
+			ntohs(mysockaddr_in->sin_port),
+			ip_str);
             } else {
                 struct sockaddr_in6 *mysockaddr_in6;
                 mysockaddr_in6 = (struct sockaddr_in6 *) mysockaddr;
                 inet_ntop(AF_INET6, &mysockaddr_in6->sin6_addr,
                           ip_str, IP6STR_LEN);
-                ofc_printf("  len: %d\n"
-                           "  family: %d\n"
-                           "  port: %d\n"
-                           "  flowinfo: 0x%08x\n"
-                           "  addr: %s\n"
-                           "  scope: 0x%08x\n",
-                           mysockaddr_in6->sin6_len,
-                           mysockaddr_in6->sin6_family,
-                           ntohs(mysockaddr_in6->sin6_port),
-                           mysockaddr_in6->sin6_flowinfo,
+                ofc_log(OFC_LOG_WARN, "  len: %d\n"
+			"  family: %d\n"
+			"  port: %d\n"
+			"  flowinfo: 0x%08x\n"
+			"  addr: %s\n"
+			"  scope: 0x%08x\n",
+			mysockaddr_in6->sin6_len,
+			mysockaddr_in6->sin6_family,
+			ntohs(mysockaddr_in6->sin6_port),
+			mysockaddr_in6->sin6_flowinfo,
                            ip_str,
                            mysockaddr_in6->sin6_scope_id);
             }
@@ -326,12 +328,13 @@ OFC_BOOL ofc_socket_impl_connect(OFC_HANDLE hSocket,
           struct sockaddr_in *sockaddrp ;
           sockaddrp = (struct sockaddr_in *) mysockaddr ;
 
-          ofc_printf ("connect error: %s %s(%d), errno %d\n",
-               "AF_INET",
-               inet_ntop (AF_INET, &sockaddrp->sin_addr,
-                      ip_str, IP6STR_LEN),
-               sockaddrp->sin_port,
-               errno) ;
+          ofc_log(OFC_LOG_WARN,
+		  "connect error: %s %s(%d), errno %d\n",
+		  "AF_INET",
+		  inet_ntop (AF_INET, &sockaddrp->sin_addr,
+			     ip_str, IP6STR_LEN),
+		  sockaddrp->sin_port,
+		  errno) ;
         }
 #endif
 
@@ -578,18 +581,18 @@ OFC_SIZET ofc_socket_impl_sendto(OFC_HANDLE hSocket, const OFC_VOID *buf,
             OFC_CHAR errstr[80];
 
             strerror_r(errno, errstr, 80);
-            ofc_printf("Sendto Error: %.80s\n", errstr);
+            ofc_log(OFC_LOG_WARN, "Sendto Error: %.80s\n", errstr);
             ofc_socket_impl_get_addresses(hSocket, &local, &remote);
 
             ofc_ntop(&local.sin_addr, local_ip, IP6STR_LEN);
             ofc_ntop(ip, remote_ip, IP6STR_LEN);
 
-            ofc_printf("  status: %d\n"
-                       "  len: %d\n"
-                       "  errno: %d\n"
-                       "  local ip: %s\n"
-                       "  remote ip: %s\n",
-                       status, len, errno, local_ip, remote_ip);
+            ofc_log(OFC_LOG_WARN, "  status: %d\n"
+		    "  len: %d\n"
+		    "  errno: %d\n"
+		    "  local ip: %s\n"
+		    "  remote ip: %s\n",
+		    status, len, errno, local_ip, remote_ip);
         }
         ofc_free(mysockaddr);
         ofc_handle_unlock(hSocket);
