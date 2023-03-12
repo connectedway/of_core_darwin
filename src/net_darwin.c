@@ -129,41 +129,49 @@ OFC_VOID ofc_net_interface_addr_impl(OFC_INT index,
          */
         found = OFC_FALSE;
         for (ifap_index = ifap;
-             ifap_index != NULL && !found;) {
+             ifap_index != NULL && !found;)
+          {
             ignore = OFC_FALSE;
 #if defined (OFC_DARWIN_IGNORE_EN5)
             if (ofc_strcmp(ifap_index->ifa_name, "en5") == 0)
                 ignore = OFC_TRUE;
 #endif
-            if (!ignore) {
+            if (!ignore)
+              {
 #if defined(OFC_LOOPBACK)
                 if ((ifap_index->ifa_flags & IFF_UP) &&
-                match_families(ifap_index))
-              {
-                if (max_count == index)
-                  found = OFC_TRUE ;
-                else
+                    match_families(ifap_index))
                   {
-                    max_count++ ;
-                    ifap_index = ifap_index->ifa_next ;
+                    if (max_count == index)
+                      found = OFC_TRUE ;
+                    else
+                      {
+                        max_count++ ;
+                        ifap_index = ifap_index->ifa_next ;
+                      }
                   }
-              }
+                else
+                  ifap_index = ifap_index->ifa_next;
 #else
                 if (!(ifap_index->ifa_flags & IFF_LOOPBACK) &&
                     (ifap_index->ifa_flags & IFF_UP) &&
-                    match_families(ifap_index)) {
+                    match_families(ifap_index))
+                  {
                     if (max_count == index)
-                        found = OFC_TRUE;
-                    else {
+                      found = OFC_TRUE;
+                    else
+                      {
                         max_count++;
                         ifap_index = ifap_index->ifa_next;
-                    }
-                } else
-                    ifap_index = ifap_index->ifa_next;
+                      }
+                  }
+                else
+                  ifap_index = ifap_index->ifa_next;
 #endif
-            } else
-                ifap_index = ifap_index->ifa_next;
-        }
+              }
+            else
+              ifap_index = ifap_index->ifa_next;
+          }
 
         if (found) {
             if (ifap_index->ifa_addr->sa_family == AF_INET) {
