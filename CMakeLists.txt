@@ -10,6 +10,7 @@ include_directories(
 )
 
 set(SRCS
+        src/backtrace_darwin.c
         src/console_darwin.c
         src/env_darwin.c
         src/event_darwin.c
