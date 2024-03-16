@@ -180,7 +180,7 @@ OFC_VOID ofc_process_set_priority(OFC_PROCESS_PRIORITY prio) {
 OFC_VOID
 ofc_process_crash_impl(OFC_CCHAR *obuf) {
     ofc_write_console_impl(obuf);
-    _Exit(EX_SOFTWARE);
+    abort();
 }  
 
 OFC_VOID
