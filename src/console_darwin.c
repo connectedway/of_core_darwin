@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <syslog.h>
 
 #include "ofc/types.h"
 #include "ofc/impl/consoleimpl.h"
@@ -46,36 +45,7 @@ OFC_VOID ofc_write_stdout_impl(OFC_CCHAR *obuf, OFC_SIZET len) {
 OFC_VOID ofc_write_log_impl(OFC_LOG_LEVEL level,
 			    OFC_CCHAR *obuf, OFC_SIZET len)
 {
-  static int log_opened = 0;
-  int priority;
-  
-  if (!log_opened)
-    {
-      log_opened = 1;
-      openlog("openfiles", LOG_PID | LOG_CONS, LOG_USER);
-    }
-
-  switch (level)
-    {
-    case OFC_LOG_DEBUG:
-      priority = LOG_DEBUG;
-      break;
-      
-    case OFC_LOG_INFO:
-      priority = LOG_INFO;
-      break;
-      
-    case OFC_LOG_WARN:
-      priority = LOG_WARNING;
-      break;
-
-    default:
-    case OFC_LOG_FATAL:
-      priority = LOG_ERR;
-      break;
-    }
-
-  syslog (priority, "%.*s", (int) len, obuf);
+  ofc_write_stdout_impl(obuf, len);
 }
 
 OFC_VOID ofc_write_console_impl(OFC_CCHAR *obuf) {
