@@ -40,6 +40,11 @@ typedef struct {
     OFC_HANDLE hNotify;
 } DARWIN_THREAD;
 
+static void free_me(DARWIN_THREAD *darwinThread)
+{
+  ofc_free(darwinThread);
+}
+
 static void *ofc_thread_launch(void *arg) {
     DARWIN_THREAD *darwinThread;
 
@@ -54,7 +59,12 @@ static void *ofc_thread_launch(void *arg) {
     if (darwinThread->detachstate == OFC_THREAD_DETACH) {
         pthread_cancel(darwinThread->thread);
         ofc_handle_destroy(darwinThread->handle);
+        
+#if 0
         ofc_free(darwinThread);
+#else
+	free_me(darwinThread);
+#endif
     }
     return (OFC_NULL);
 }
